@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>生成AIパスポート 学習ガイド</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+:root{--p:#4f46e5;--pl:#818cf8;--ok:#10b981;--warn:#f59e0b;--ng:#ef4444;--bg:#f8fafc;--card:#fff;--txt:#1e293b;--mut:#64748b;--bdr:#e2e8f0;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;}
+
+/* ── screens ── */
+.screen{display:none;min-height:100vh;}
+.screen.on{display:block;}
+
+/* loading */
+#s-loading{background:var(--p);}
+#s-loading.on{display:flex;align-items:center;justify-content:center;}
+.spinner{width:48px;height:48px;border:5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* auth */
+#s-auth{flex-direction:column;align-items:center;justify-content:center;padding:24px;background:var(--p);}
+#s-auth.on{display:flex;}
+.auth-box{background:#fff;border-radius:16px;padding:24px;width:100%;max-width:380px;box-shadow:0 8px 32px rgba(0,0,0,.15);}
+.auth-logo{text-align:center;margin-bottom:20px;}
+.auth-logo h1{font-size:20px;font-weight:800;color:var(--p);margin-top:8px;}
+.auth-logo p{font-size:13px;color:var(--mut);margin-top:4px;}
+.auth-tabs{display:flex;border-bottom:2px solid var(--bdr);margin-bottom:18px;}
+.auth-tab{flex:1;padding:10px;text-align:center;font-size:14px;font-weight:600;color:var(--mut);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;}
+.auth-tab.on{color:var(--p);border-bottom-color:var(--p);}
+.form-group{margin-bottom:14px;}
+.form-group label{display:block;font-size:13px;font-weight:600;margin-bottom:5px;color:var(--txt);}
+.form-group input{width:100%;padding:10px 12px;border:1.5px solid var(--bdr);border-radius:8px;font-size:14px;outline:none;transition:border .2s;}
+.form-group input:focus{border-color:var(--p);}
+.btn-primary{width:100%;padding:12px;background:var(--p);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;}
+.btn-primary:hover{background:#4338ca;}
+.btn-primary:disabled{opacity:.6;cursor:not-allowed;}
+.auth-msg{font-size:13px;text-align:center;margin-top:10px;min-height:18px;}
+.auth-msg.err{color:var(--ng);}
+.auth-msg.ok{color:var(--ok);}
+
+/* onboarding */
+#s-onboard{padding:20px;max-width:520px;margin:0 auto;}
+.ob-step{display:none;}
+.ob-step.on{display:block;}
+.ob-title{font-size:20px;font-weight:800;margin-bottom:6px;}
+.ob-sub{font-size:13px;color:var(--mut);margin-bottom:20px;line-height:1.6;}
+.level-cards{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
+.level-card{border:2px solid var(--bdr);border-radius:12px;padding:14px;cursor:pointer;transition:all .2s;}
+.level-card.sel{border-color:var(--p);background:#eef2ff;}
+.level-card h3{font-size:15px;font-weight:700;margin-bottom:3px;}
+.level-card p{font-size:12px;color:var(--mut);line-height:1.5;}
+.known-grid{display:flex;flex-direction:column;gap:6px;margin-bottom:20px;}
+.known-item{display:flex;align-items:flex-start;gap:10px;padding:10px;border:1.5px solid var(--bdr);border-radius:8px;cursor:pointer;transition:all .15s;}
+.known-item.sel{border-color:var(--ok);background:#d1fae5;}
+.known-item input{width:16px;height:16px;accent-color:var(--ok);flex-shrink:0;margin-top:1px;cursor:pointer;}
+.known-item-label{font-size:13px;line-height:1.4;}
+.known-ch{font-size:11px;font-weight:700;color:var(--mut);margin-bottom:1px;}
+.ob-hint{font-size:12px;color:var(--mut);margin-bottom:12px;}
+.ob-actions{display:flex;gap:10px;}
+.btn-sec{flex:1;padding:12px;background:var(--bdr);color:var(--txt);border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;}
+
+/* app header */
+.app-header{background:var(--p);color:#fff;padding:14px 16px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.2);}
+.app-header h1{font-size:16px;font-weight:700;}
+.app-header p{font-size:11px;opacity:.8;margin-top:2px;}
+
+/* tabs */
+.app-tabs{display:flex;background:#fff;border-bottom:2px solid var(--bdr);position:sticky;top:56px;z-index:99;}
+.app-tab{flex:1;min-width:60px;padding:10px 2px;text-align:center;font-size:11px;font-weight:600;color:var(--mut);border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;}
+.app-tab.on{color:var(--p);border-bottom-color:var(--p);}
+
+/* tab content */
+.tab-pane{display:none;padding:14px;max-width:680px;margin:0 auto;}
+.tab-pane.on{display:block;}
+
+/* cards */
+.card{background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.06);border:1px solid var(--bdr);}
+.card-title{font-size:14px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+
+/* progress */
+.prog-wrap{margin:8px 0;}
+.prog-lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--mut);margin-bottom:3px;}
+.prog-bar{height:8px;background:var(--bdr);border-radius:4px;overflow:hidden;}
+.prog-fill{height:100%;background:var(--p);border-radius:4px;transition:width .3s;}
+
+/* alert */
+.alert{padding:10px 12px;border-radius:8px;font-size:13px;margin-bottom:10px;line-height:1.5;}
+.a-info{background:#eff6ff;border-left:4px solid #3b82f6;}
+.a-warn{background:#fffbeb;border-left:4px solid var(--warn);}
+
+/* plan tasks */
+.week-badge{background:var(--p);color:#fff;border-radius:20px;padding:2px 10px;font-size:12px;font-weight:700;flex-shrink:0;}
+.week-badge.done{background:var(--ok);}
+.task-row{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--bdr);}
+.task-row:last-child{border-bottom:none;}
+.task-row.known-row{opacity:.45;}
+.task-check{width:18px;height:18px;accent-color:var(--p);margin-top:2px;flex-shrink:0;cursor:pointer;}
+.task-lbl{font-size:13px;line-height:1.5;}
+.task-lbl.done{text-decoration:line-through;color:var(--mut);}
+.task-meta{font-size:11px;color:var(--mut);margin-top:2px;}
+.badge-known{display:inline-block;background:#d1fae5;color:#065f46;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:4px;}
+.badge-hi{display:inline-block;background:#fee2e2;color:#dc2626;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:4px;}
+.toggle-known{font-size:12px;color:var(--p);cursor:pointer;margin-bottom:8px;display:inline-block;}
+
+/* quiz */
+.q-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.q-cnt{font-size:13px;color:var(--mut);}
+.q-ch{font-size:12px;background:var(--p);color:#fff;padding:2px 8px;border-radius:10px;}
+.q-prog{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:10px;}
+.qd{width:20px;height:20px;border-radius:50%;background:var(--bdr);font-size:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;flex-shrink:0;}
+.qd.c{background:var(--ok)}.qd.w{background:var(--ng)}.qd.cur{background:var(--p);}
+.q-txt{font-size:15px;font-weight:600;line-height:1.6;margin-bottom:14px;}
+.q-opts{display:flex;flex-direction:column;gap:8px;}
+.q-opt{background:#fff;border:2px solid var(--bdr);border-radius:10px;padding:12px 13px;font-size:13px;text-align:left;cursor:pointer;transition:all .15s;line-height:1.5;}
+.q-opt:hover:not(:disabled){border-color:var(--pl);background:#eef2ff;}
+.q-opt.c{border-color:var(--ok);background:#d1fae5;color:#065f46;}
+.q-opt.w{border-color:var(--ng);background:#fee2e2;color:#991b1b;}
+.q-opt:disabled{cursor:not-allowed;}
+.q-exp{background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:11px 13px;font-size:13px;line-height:1.7;margin-top:10px;display:none;}
+.q-exp.on{display:block;}
+.q-next{width:100%;margin-top:10px;padding:12px;background:var(--p);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;display:none;}
+.q-next.on{display:block;}
+
+/* result */
+.score-wrap{position:relative;width:110px;height:110px;margin:0 auto 12px;}
+.score-wrap svg{position:absolute;top:0;left:0;transform:rotate(-90deg);}
+.score-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff;border-radius:50%;margin:8px;}
+.s-num{font-size:26px;font-weight:800;}
+.s-den{font-size:12px;color:var(--mut);}
+.ch-bars{display:flex;flex-direction:column;gap:8px;}
+.ch-row{display:flex;align-items:center;gap:8px;font-size:12px;}
+.ch-nm{width:56px;flex-shrink:0;}
+.ch-bw{flex:1;height:13px;background:var(--bdr);border-radius:7px;overflow:hidden;}
+.ch-bf{height:100%;border-radius:7px;}
+.ch-sc{width:32px;text-align:right;font-weight:700;}
+
+/* history */
+.att-card{background:#fff;border:1px solid var(--bdr);border-radius:10px;padding:12px;margin-bottom:8px;}
+.att-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.att-score{font-size:19px;font-weight:800;}
+.att-date{font-size:11px;color:var(--mut);margin-top:2px;}
+.ab-row{display:flex;align-items:center;gap:6px;font-size:11px;margin-bottom:3px;}
+.ab-lbl{width:52px;flex-shrink:0;color:var(--mut);}
+.ab-bw{flex:1;height:9px;background:var(--bdr);border-radius:5px;overflow:hidden;}
+.ab-bf{height:100%;border-radius:5px;}
+.ab-val{width:28px;text-align:right;font-weight:700;}
+.trend-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--bdr);font-size:13px;}
+.trend-row:last-child{border-bottom:none;}
+.trend-ch{width:52px;flex-shrink:0;font-weight:600;font-size:12px;}
+.trend-dots{display:flex;gap:4px;flex:1;}
+.td{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;}
+.trend-arrow{font-size:15px;width:16px;}
+.trend-val{font-size:11px;font-weight:700;width:30px;}
+.issue-card{padding:10px 12px;border-radius:8px;margin-bottom:8px;}
+.issue-h{background:#fee2e2;border-left:4px solid var(--ng);}
+.issue-m{background:#fef3c7;border-left:4px solid var(--warn);}
+.issue-ok{background:#d1fae5;border-left:4px solid var(--ok);}
+.issue-ttl{font-size:13px;font-weight:700;margin-bottom:3px;}
+.issue-body{font-size:12px;line-height:1.5;}
+
+/* settings */
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--bdr);font-size:14px;}
+.setting-row:last-child{border-bottom:none;}
+.setting-lbl{font-weight:600;}
+.setting-sub{font-size:11px;color:var(--mut);margin-top:2px;}
+.btn-sm{padding:7px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;}
+.btn-danger{background:#fee2e2;color:var(--ng);}
+.btn-outline{background:#fff;color:var(--p);border:1.5px solid var(--p);}
+
+/* empty state */
+.empty{text-align:center;padding:40px 20px;color:var(--mut);font-size:14px;}
+
+@media(max-width:360px){.app-tab{font-size:10px;} .q-txt{font-size:14px;}}
+</style>
+</head>
+<body>
+
+<!-- ============ SCREEN: Loading ============ -->
+<div id="s-loading" class="screen on"><div class="spinner"></div></div>
+
+<!-- ============ SCREEN: Auth ============ -->
+<div id="s-auth" class="screen">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <div style="font-size:40px">🎯</div>
+      <h1>生成AIパスポート<br>学習ガイド</h1>
+      <p>ログインして学習進捗をどこでも同期</p>
+    </div>
+    <div class="auth-tabs">
+      <div class="auth-tab on" onclick="authTab('login')">ログイン</div>
+      <div class="auth-tab" onclick="authTab('register')">新規登録</div>
+    </div>
+    <!-- Login -->
+    <div id="af-login">
+      <div class="form-group"><label>メールアドレス</label><input type="email" id="l-email" placeholder="you@example.com"></div>
+      <div class="form-group"><label>パスワード</label><input type="password" id="l-pass" placeholder="パスワード"></div>
+      <button class="btn-primary" onclick="doLogin()">ログイン</button>
+    </div>
+    <!-- Register -->
+    <div id="af-register" style="display:none">
+      <div class="form-group"><label>表示名</label><input type="text" id="r-name" placeholder="例: 田中太郎"></div>
+      <div class="form-group"><label>メールアドレス</label><input type="email" id="r-email" placeholder="you@example.com"></div>
+      <div class="form-group"><label>パスワード（6文字以上）</label><input type="password" id="r-pass" placeholder="パスワード"></div>
+      <button class="btn-primary" onclick="doRegister()">アカウントを作成</button>
+    </div>
+    <div class="auth-msg" id="auth-msg"></div>
+    <div style="margin-top:14px;text-align:center;font-size:12px;color:var(--mut)">
+      ゲストとして使う場合は<span style="color:var(--p);cursor:pointer" onclick="guestMode()">こちら</span>（進捗はこの端末のみ保存）
+    </div>
+  </div>
+</div>
+
+<!-- ============ SCREEN: Onboarding ============ -->
+<div id="s-onboard" class="screen">
+  <!-- Step 1: Level -->
+  <div id="ob-1" class="ob-step on" style="padding-top:40px">
+    <div class="ob-title">👋 ようこそ！</div>
+    <div class="ob-sub">あなたのAI知識レベルを教えてください。<br>最適な学習プランを生成します。</div>
+    <div class="level-cards">
+      <div class="level-card sel" onclick="selLevel('beginner',this)">
+        <h3>🌱 初心者</h3>
+        <p>AIについてあまり知らない。ChatGPTは聞いたことある程度。<br><strong>推奨学習時間: 約30時間</strong></p>
+      </div>
+      <div class="level-card" onclick="selLevel('intermediate',this)">
+        <h3>📚 経験者</h3>
+        <p>ChatGPT等のAIツールを日常的に利用している。<br><strong>推奨学習時間: 約20時間</strong></p>
+      </div>
+      <div class="level-card" onclick="selLevel('advanced',this)">
+        <h3>🚀 上級者</h3>
+        <p>AI開発・エンジニアリング経験あり。API利用やプロンプト設計も実践済み。<br><strong>推奨学習時間: 約10時間</strong></p>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="ob1Next()">次へ →</button>
+  </div>
+  <!-- Step 2: Known sections -->
+  <div id="ob-2" class="ob-step">
+    <div class="ob-title" style="margin-bottom:6px">既知のセクションを選択</div>
+    <div class="ob-hint">すでに十分理解しているセクションにチェック。学習プランで非強調表示になります。</div>
+    <div class="known-grid" id="ob-known-grid"></div>
+    <div class="ob-actions">
+      <button class="btn-sec" onclick="ob2Skip()">スキップ</button>
+      <button class="btn-primary" style="flex:2" onclick="ob2Done()">完了して開始</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SCREEN: App ============ -->
+<div id="s-app" class="screen">
+  <div class="app-header">
+    <h1>🎯 生成AIパスポート 学習ガイド</h1>
+    <p>試験まで <span id="remain"></span> ／ <span id="hdr-name"></span></p>
+  </div>
+  <div class="app-tabs">
+    <button class="app-tab on"  onclick="showTab('plan',this)">📅 プラン</button>
+    <button class="app-tab"     onclick="showTab('quiz',this)">✏️ 試験</button>
+    <button class="app-tab"     onclick="showTab('hist',this)">📈 履歴</button>
+    <button class="app-tab"     onclick="showTab('cfg',this)">⚙️ 設定</button>
+  </div>
+
+  <!-- ── TAB: プラン ── -->
+  <div id="tab-plan" class="tab-pane on">
+    <div class="card">
+      <div class="card-title">📈 全体進捗</div>
+      <div class="prog-wrap">
+        <div class="prog-lbl"><span>完了タスク</span><span id="plan-lbl">0/0</span></div>
+        <div class="prog-bar"><div class="prog-fill" id="plan-bar" style="width:0%"></div></div>
+      </div>
+      <div id="plan-summary" style="font-size:12px;color:var(--mut);margin-top:6px"></div>
+    </div>
+    <div style="margin-bottom:8px;display:flex;align-items:center;gap:10px">
+      <span class="toggle-known" onclick="toggleKnown()">👁 既知を<span id="known-toggle-txt">非表示</span></span>
+      <span style="font-size:12px;color:var(--mut)">緑背景＝既知セクション</span>
+    </div>
+    <div id="plan-body"></div>
+  </div>
+
+  <!-- ── TAB: 試験 ── -->
+  <div id="tab-quiz" class="tab-pane">
+    <div id="quiz-start">
+      <div class="card">
+        <div class="card-title">✏️ 模擬試験</div>
+        <p style="font-size:14px;line-height:1.7;margin-bottom:12px">全5章から20問出題。解答後に解説表示、終了後にスコアを自動保存します。</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+          <div style="background:#f0fdf4;border-radius:8px;padding:10px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--ok)">20問</div><div style="font-size:11px;color:var(--mut)">出題数</div></div>
+          <div style="background:#eff6ff;border-radius:8px;padding:10px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--p)">5章</div><div style="font-size:11px;color:var(--mut)">全章カバー</div></div>
+        </div>
+        <div style="font-size:13px;margin-bottom:14px;line-height:1.9">📘 第1章（AI基礎）：4問<br>📗 第2章（生成AI）：4問<br>📙 第3章（最新動向）：3問<br>📕 第4章（法律・倫理）：6問<br>📓 第5章（プロンプト）：3問</div>
+        <button class="btn-primary" onclick="startQuiz()">試験を開始する</button>
+      </div>
+    </div>
+    <div id="quiz-run" style="display:none">
+      <div class="card">
+        <div class="q-hdr"><span class="q-cnt" id="q-cnt">問1/20</span><span class="q-ch" id="q-ch">第1章</span></div>
+        <div class="q-prog" id="q-prog"></div>
+        <div class="q-txt" id="q-txt"></div>
+        <div class="q-opts" id="q-opts"></div>
+        <div class="q-exp" id="q-exp"></div>
+        <button class="q-next" id="q-next" onclick="nextQ()">次の問題へ →</button>
+      </div>
+    </div>
+    <div id="quiz-result" style="display:none">
+      <div class="card">
+        <div class="card-title" style="justify-content:center">🏆 試験結果</div>
+        <div class="score-wrap">
+          <svg width="110" height="110"><circle cx="55" cy="55" r="46" fill="none" stroke="var(--bdr)" stroke-width="10"/><circle id="s-arc" cx="55" cy="55" r="46" fill="none" stroke="var(--ok)" stroke-width="10" stroke-linecap="round" stroke-dasharray="289" stroke-dashoffset="289"/></svg>
+          <div class="score-inner"><div class="s-num" id="s-num">0</div><div class="s-den">/ 20問</div></div>
+        </div>
+        <div id="s-msg" style="text-align:center;font-size:15px;font-weight:700;margin-bottom:4px"></div>
+        <div id="s-sub" style="text-align:center;font-size:13px;color:var(--mut);margin-bottom:14px"></div>
+        <hr style="border:none;border-top:1px solid var(--bdr);margin-bottom:12px">
+        <div style="font-size:13px;font-weight:700;margin-bottom:8px">章別スコア</div>
+        <div class="ch-bars" id="ch-bars"></div>
+        <div id="s-weak" style="margin-top:12px;padding:11px;background:#fffbeb;border-radius:8px;font-size:13px"></div>
+        <button class="btn-primary" style="margin-top:12px" onclick="retryQuiz()">もう一度</button>
+        <button class="btn-primary" style="margin-top:8px;background:#0f766e" onclick="showTab('hist',null)">📈 履歴・課題分析を見る</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB: 履歴 ── -->
+  <div id="tab-hist" class="tab-pane">
+    <div class="card" id="analysis-card" style="display:none">
+      <div class="card-title">🔍 課題分析</div>
+      <div id="issue-list"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 章別スコア推移</div>
+      <div id="trend-area"><div class="empty">模擬試験を受けると推移が表示されます</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📋 受験履歴 <span style="font-size:12px;font-weight:400;color:var(--mut);margin-left:auto" id="hist-count"></span></div>
+      <div id="hist-list"><div class="empty">まだ受験記録がありません。</div></div>
+      <button id="clr-btn" style="display:none;width:100%;margin-top:10px;padding:9px;background:#fee2e2;color:var(--ng);border:1px solid #fca5a5;border-radius:8px;font-size:13px;cursor:pointer" onclick="clearHist()">履歴をリセット</button>
+    </div>
+  </div>
+
+  <!-- ── TAB: 設定 ── -->
+  <div id="tab-cfg" class="tab-pane">
+    <div class="card">
+      <div class="card-title">👤 プロフィール</div>
+      <div class="setting-row">
+        <div><div class="setting-lbl">表示名</div></div>
+        <input id="cfg-name" type="text" style="border:1.5px solid var(--bdr);border-radius:8px;padding:7px 10px;font-size:13px;width:150px">
+      </div>
+      <div class="setting-row">
+        <div><div class="setting-lbl">レベル</div><div class="setting-sub">学習プランの難易度に影響</div></div>
+        <select id="cfg-level" style="border:1.5px solid var(--bdr);border-radius:8px;padding:7px 10px;font-size:13px">
+          <option value="beginner">🌱 初心者</option>
+          <option value="intermediate">📚 経験者</option>
+          <option value="advanced">🚀 上級者</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <div><div class="setting-lbl">試験目標日</div><div class="setting-sub">残り日数の計算に使用</div></div>
+        <input id="cfg-date" type="date" style="border:1.5px solid var(--bdr);border-radius:8px;padding:7px 10px;font-size:13px">
+      </div>
+      <button class="btn-primary" style="margin-top:12px" onclick="saveProfile()">保存</button>
+    </div>
+    <div class="card">
+      <div class="card-title">✅ 既知セクション設定</div>
+      <p style="font-size:12px;color:var(--mut);margin-bottom:10px">すでに理解しているセクションをチェック。プランで非強調表示になります。</p>
+      <div id="cfg-known-grid"></div>
+      <button class="btn-primary" style="margin-top:12px" onclick="saveKnown()">既知設定を保存</button>
+    </div>
+    <div class="card">
+      <div class="card-title">🔐 アカウント</div>
+      <div id="cfg-email" style="font-size:13px;color:var(--mut);margin-bottom:12px"></div>
+      <button class="btn-sm btn-danger" onclick="doLogout()">ログアウト</button>
+    </div>
+  </div>
+
+</div><!-- /s-app -->
+
+<script>
+// ─────────────────────────────────────────────
+// ★ CONFIG: Supabaseプロジェクトの値に置き換えてください
+// ─────────────────────────────────────────────
+const SUPABASE_URL      = 'https://cpsnzxykjczppfjtvptz.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwc256eHlramN6cHBmanR2cHR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5NTE4MTgsImV4cCI6MjA5NTUyNzgxOH0.np8I8UH8IDCBXrj_Gy03-61iQ6WsoyAJyWG5XXyA8iw'; // gitleaks:allow
+
+// ─────────────────────────────────────────────
+// CONSTANTS
+// ─────────────────────────────────────────────
+const CHAPTERS   = ['第1章','第2章','第3章','第4章','第5章'];
+const CH_COLORS  = {'第1章':'#6366f1','第2章':'#10b981','第3章':'#f59e0b','第4章':'#ef4444','第5章':'#8b5cf6'};
+const CH_TOTAL   = {'第1章':4,'第2章':4,'第3章':3,'第4章':6,'第5章':3};
+
+const TASKS = [
+  {id:'t1',w:1,ch:'第1章',lbl:'AIの3ブーム・ダートマス会議・弱いAI/強いAI/シンギュラリティを整理',min:45,hi:false},
+  {id:'t2',w:1,ch:'第2章',lbl:'Transformer → GPT系譜（GPT-1〜GPT-5, o1/o3/o4）の時系列を把握',min:60,hi:false},
+  {id:'t3',w:1,ch:'第2章',lbl:'VAE・GAN・RNN・LSTMの一言定義を整理',min:30,hi:false},
+  {id:'t4',w:1,ch:'第2章',lbl:'RLHF・ハルシネーション・アライメント・ファインチューニングを試験文脈で整理',min:45,hi:false},
+  {id:'t5',w:1,ch:'第1章',lbl:'機械学習の手法（教師あり/なし/強化/半教師あり）の定義と違いを確認',min:30,hi:false},
+  {id:'t6',w:2,ch:'第4章',lbl:'知的財産権5種（著作権・特許・商標・意匠・肖像権）とAI生成物への適用',min:60,hi:true},
+  {id:'t7',w:2,ch:'第4章',lbl:'AI新法（2025年6月公布）：必要性・基本構造・AI事業者GL第1.1版との関係',min:75,hi:true},
+  {id:'t8',w:2,ch:'第4章',lbl:'AI社会原則3理念（Dignity・D&I・Sustainability）と共通指針10項目',min:30,hi:false},
+  {id:'t9',w:2,ch:'第4章',lbl:'AI事業者GL：AI開発者/提供者/利用者の3主体の役割分担',min:30,hi:false},
+  {id:'t10',w:2,ch:'第4章',lbl:'個人情報保護法：要配慮個人情報・機微情報・匿名加工情報の違いを整理',min:30,hi:false},
+  {id:'t11',w:3,ch:'第3章',lbl:'ディープフェイク（技術・事件・法的問題）、ディスインフォメーションの定義',min:30,hi:false},
+  {id:'t12',w:3,ch:'第3章',lbl:'RAG：チャンク・ベクトルDB・検索拡張生成の仕組みを試験用語で整理',min:20,hi:false},
+  {id:'t13',w:3,ch:'第3章',lbl:'AIエージェント：GenSpark・Manus・Skywork AI・MCPの概要把握',min:25,hi:false},
+  {id:'t14',w:3,ch:'第4章',lbl:'セキュリティ用語：スミッシング・ヴィッシング・スピアフィッシング・ランサムウェアの違い',min:30,hi:false},
+  {id:'t15',w:3,ch:'第5章',lbl:'LLMパラメータ：Temperature・Top-p・プレトレーニングの定義確認',min:20,hi:false},
+  {id:'t16',w:4,ch:'演習',lbl:'模擬試験20問を解いてスコア確認',min:30,hi:false},
+  {id:'t17',w:4,ch:'演習',lbl:'弱点章を重点復習（履歴タブで確認）',min:45,hi:false},
+  {id:'t18',w:4,ch:'演習',lbl:'2回目模擬試験。時間配分確認（60問／60分＝1分／問）',min:30,hi:false},
+  {id:'t19',w:4,ch:'確認',lbl:'最新AIモデル一覧（GPT-5, o3, o4, Claude系, Gemini系）の特徴を確認',min:30,hi:false},
+  {id:'t20',w:4,ch:'確認',lbl:'AI新法・著作権・個人情報の重要用語を最終確認して試験当日へ',min:30,hi:false},
+];
+
+const WEEK_LABELS = {1:'理論用語の試験用語化',2:'法律・著作権・AI新法',3:'最新動向＋セキュリティ',4:'模擬試験・弱点補強'};
+const ADVICE = {
+  '第1章':'AIの3ブーム（年代・技術名）、シンギュラリティの提唱者、弱いAI/強いAIの定義を重点復習',
+  '第2章':'GAN・VAE・RNN・LSTMの一言定義を書けるようにする。GPT系譜の時系列を表で暗記',
+  '第3章':'RAGのチャンク・ベクトルDB、MCPの定義。ディープフェイク検出の限界も押さえる',
+  '第4章':'AI新法の正式名称と基本構造、著作権法とAI生成物の関係、3主体を優先学習',
+  '第5章':'Temperature/Top-pの効果・使い分け、Zero-Shot vs Few-Shotの違いを整理',
+};
+
+const QUESTIONS = [
+  {ch:'第1章',t:'第二次AIブームを牽引した技術として最も適切なものはどれか。',o:['ディープラーニングによる画像認識','エキスパートシステムによる知識の形式化','ビッグデータを活用した機械学習','トランスフォーマーによる自然言語処理'],a:1,e:'<strong>エキスパートシステム</strong>は1980年代の第二次AIブームを牽引。専門家の知識をルールとして記述しAIに推論させる手法。第三次ブームがビッグデータ・ディープラーニング。'},
+  {ch:'第1章',t:'「過学習（オーバーフィッティング）」を防ぐ手法として適切でないものはどれか。',o:['ドロップアウト','正則化','転移学習の活用','データセットのサイズを極端に小さくする'],a:3,e:'<strong>データセットを極端に小さくする</strong>と逆に過学習が起きやすくなる。ドロップアウトや正則化はニューラルネットワークが訓練データに過剰適合するのを防ぐ代表的な手法。'},
+  {ch:'第1章',t:'シンギュラリティ（技術的特異点）について正しい記述はどれか。',o:['1956年のダートマス会議で提唱された概念である','AIが人間の知能を超え自己改善を繰り返すことで急激な変化が起きる転換点','2045年に人類が滅亡するという予測である','AIの冬が終わりを告げる時点のことを指す'],a:1,e:'<strong>シンギュラリティ</strong>はヴァーナー・ヴィンジが提唱しレイ・カーツワイルが普及させた概念。AIが人間知能を超えて自己改善を繰り返す転換点。2045年問題とも呼ばれる。'},
+  {ch:'第1章',t:'機械学習において正解ラベルなしでデータの構造やパターンを自動発見する手法はどれか。',o:['教師あり学習','強化学習','教師なし学習','転移学習'],a:2,e:'<strong>教師なし学習</strong>は正解ラベルなしでデータのパターンやグループを発見する手法。クラスタリングや次元削減が代表例。強化学習は報酬ベース。'},
+  {ch:'第2章',t:'Transformerモデルの中核となる技術はどれか。',o:['自己注意機構（Self-Attention）','畳み込み（Convolution）','再帰処理（Recurrence）','敵対的生成（Adversarial Generation）'],a:0,e:'Transformerは<strong>Self-Attention（自己注意機構）</strong>により文中の全単語間の関係を同時に計算できる。RNNの逐次処理の限界を克服し並列処理が可能になった。2017年にGoogleが発表。'},
+  {ch:'第2章',t:'ハルシネーション（Hallucination）の説明として正しいものはどれか。',o:['AIが学習データを丸暗記して出力する現象','AIが事実に反する情報をあたかも正確であるかのように出力する現象','AIが出力を拒否する安全機能','AIが画像を誤って認識する現象'],a:1,e:'<strong>ハルシネーション</strong>は生成AIが「もっともらしいが事実でない情報」を自信を持って出力する現象。確率的なトークン予測の性質上起きる。'},
+  {ch:'第2章',t:'RLHF（Reinforcement Learning from Human Feedback）の説明として正しいものはどれか。',o:['大量のテキストデータを使った事前学習の手法','人間の評価・フィードバックを報酬として使いモデルを強化学習で改善する手法','モデルのパラメータ数を増やして性能を向上させる手法','画像とテキストを組み合わせて学習するマルチモーダル学習手法'],a:1,e:'<strong>RLHF</strong>はInstructGPT/ChatGPTに採用。人間が複数の出力を評価→報酬モデル構築→強化学習でモデルを最適化。AIを人間の意図に沿わせる「アライメント」に貢献。'},
+  {ch:'第2章',t:'VAE（変分自己符号化器）の主な特徴はどれか。',o:['2つのネットワーク（生成器と識別器）が競い合いながら学習する','入力データを潜在ベクトルに圧縮しそこから新しいデータを生成できる','時系列データを処理するために設計された回帰型ニューラルネットワーク','トークンの位置情報をエンコードして文脈を理解するモデル'],a:1,e:'<strong>VAE</strong>はエンコーダで入力を潜在ベクトルに圧縮し、デコーダで新データを生成。2つのネットワークが競うのはGAN。時系列はRNN/LSTM。位置エンコードはTransformer。'},
+  {ch:'第3章',t:'RAG（Retrieval-Augmented Generation）の主な目的として最も適切なものはどれか。',o:['モデルのパラメータを追加学習して専門知識を習得させること','外部データベースから関連情報を検索してLLMの回答を補完・強化すること','画像と音声を組み合わせたマルチモーダル生成を行うこと','AIの応答速度を高速化するためのキャッシュ技術'],a:1,e:'<strong>RAG</strong>はLLMのカットオフ以降の最新情報や社内ドキュメント等を外部から検索してGenerationに活用する手法。ファインチューニングと異なりモデル自体は変更しない。'},
+  {ch:'第3章',t:'MCP（Model Context Protocol）の説明として正しいものはどれか。',o:['AIモデルと外部ツール・データソースを標準的に接続するためのプロトコル','大規模言語モデルの学習に使うデータフォーマットの規格','複数のAIモデルを並列実行するための分散処理プロトコル','生成AIの出力を検閲・フィルタリングするセキュリティ規格'],a:0,e:'<strong>MCP</strong>はAnthropicが策定したオープンプロトコル。LLMと外部ツール・DB・APIを標準的なインターフェースで接続する。AIエージェントが外部システムと連携する際の共通規格。'},
+  {ch:'第3章',t:'ディープフェイクに関する説明として誤っているものはどれか。',o:['AIを使って本物そっくりの偽の映像・音声を生成する技術である','ディスインフォメーション（偽情報）の拡散手段として悪用される危険がある','技術的に完璧であるため人間や検出ツールによる識別は不可能である','政治的な文脈でのなりすまし映像や金融詐欺への悪用事例がある'],a:2,e:'「検出が<strong>完全に不可能</strong>」は誤り。ディープフェイク検出技術（フォレンジック解析等）が開発されており、完璧な偽造は困難。技術進歩と検出技術の競争が続いている。'},
+  {ch:'第4章',t:'個人情報保護法における「要配慮個人情報」に含まれるものはどれか。',o:['氏名と生年月日の組み合わせ','人種・信条・病歴・犯罪歴などの機微な情報','メールアドレスと電話番号','クレジットカード番号'],a:1,e:'<strong>要配慮個人情報</strong>は不当な差別・偏見の原因となりうる人種・信条・社会的身分・病歴・犯罪歴・障害などが該当。取得には原則として本人の同意が必要。'},
+  {ch:'第4章',t:'AI生成物の著作権に関して現在の日本の考え方として正しいものはどれか。',o:['AIが生成したものは自動的にAI開発会社が著作権を持つ','人間の創作的な関与がなくAIが自律的に生成したものには著作権は発生しない','AIが生成した全ての作品には著作権が発生し20年間保護される','生成AIを使って作成した場合は必ず著作権侵害となる'],a:1,e:'現行著作権法では<strong>著作権は「人の創作的表現」に発生</strong>する。AIが自律的に生成した場合は著作権なし。人間がプロンプト設計等で創作的に関与した場合は権利が認められる可能性あり。'},
+  {ch:'第4章',t:'AI社会原則が目指す社会の基本理念3つの組み合わせとして正しいものはどれか。',o:['効率性・収益性・拡張性','Dignity（尊厳）・Diversity & Inclusion（多様性と包摂）・Sustainability（持続可能性）','透明性・説明責任・公平性','セキュリティ・プライバシー・信頼性'],a:1,e:'AI社会原則の基本理念は「<strong>人間の尊厳が尊重される社会（Dignity）・多様な幸せを追求できる社会（D&I）・持続可能な社会（Sustainability）</strong>」の3つ。'},
+  {ch:'第4章',t:'AI事業者ガイドライン第1.1版が定めるAIの事業活動における3つの主体として正しいものはどれか。',o:['研究者・開発者・利用者','AI開発者（AI Developer）・AI提供者（AI Provider）・AI利用者（AI Business User）','政府・企業・個人','設計者・実装者・監査者'],a:1,e:'ガイドラインは<strong>AI開発者（基盤モデル開発）・AI提供者（サービス構築・提供）・AI利用者（業務利用）</strong>の3主体を定義し、それぞれに異なる責任と指針を示す。'},
+  {ch:'第4章',t:'2025年6月4日に公布されたAI新法の正式名称として正しいものはどれか。',o:['人工知能の倫理的利用の確保に関する法律','人工知能関連技術の研究開発及び活用の推進に関する法律','デジタル社会形成基本法の一部改正','生成AI規制及び安全基準整備法'],a:1,e:'AI新法の正式名称は「<strong>人工知能関連技術の研究開発及び活用の推進に関する法律</strong>」。AI事業者ガイドラインと連携する推進法として位置づけられる。'},
+  {ch:'第4章',t:'「スピアフィッシング」の説明として正しいものはどれか。',o:['不特定多数に一斉送信する詐欺メール','特定の個人・組織を標的にした個人情報収集を目的とした詐欺攻撃','偽の公衆Wi-Fiで通信を傍受する攻撃','SMSを使ったフィッシング詐欺'],a:1,e:'<strong>スピアフィッシング</strong>は特定のターゲットを調査したうえで信頼できる送信元を装って攻撃する標的型フィッシング。不特定多数への一斉送信は通常フィッシング、SMSはスミッシング。'},
+  {ch:'第5章',t:'LLMのTemperatureパラメータの説明として正しいものはどれか。',o:['モデルのパラメータ総数を表す指標','出力のランダム性を制御するパラメータで値が高いほど多様な出力が生成される','一度に処理できるトークン数の最大値','プロンプトの長さに対する応答の長さの比率'],a:1,e:'<strong>Temperature</strong>は出力の確率分布を調整するパラメータ。高い値→多様・創造的な出力。低い値→確定的・一貫した出力。'},
+  {ch:'第5章',t:'Few-Shotプロンプティングの説明として正しいものはどれか。',o:['いくつかの入出力の例をプロンプトに含めモデルに回答形式を学習させる手法','事前にモデルを追加学習させて特定タスクに特化させる手法','プロンプトを短くして処理速度を向上させる技術','モデルに役割設定（ペルソナ）を与えてから質問する手法'],a:0,e:'<strong>Few-Shot</strong>はプロンプト内に少数の例（入力→出力の組み合わせ）を示す手法。例なしはZero-Shot。事前学習はファインチューニング。'},
+  {ch:'第5章',t:'現在のテキスト生成AIが苦手なこととして正しいものはどれか。',o:['長文の要約','メールの文章作成','正確な文字数の指定と数値計算','箇条書きを文章に変換すること'],a:2,e:'テキスト生成AIは確率的なトークン予測を行うため<strong>「正確な文字数の指定」や「計算」</strong>が苦手。最新情報の提供（学習カットオフ以降）も苦手。'},
+];
+
+// ─────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────
+let client = null;
+let session = null;
+let profile = { display_name:'', level:'beginner', known_tasks:[], target_date:'' };
+let planChecked = new Set();
+let showKnown = false;
+let obLevel = 'beginner';
+let obKnown = new Set();
+let qIdx=0, qAns=[], qAnswered=false;
+let isGuest = false;
+
+const LS_PLAN = 'guga_plan';
+const LS_HIST = 'guga_hist';
+const LS_PROFILE = 'guga_profile';
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+window.addEventListener('load', async () => {
+  const configured = SUPABASE_URL !== 'YOUR_SUPABASE_PROJECT_URL';
+  if (configured) {
+    client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const { data } = await client.auth.getSession();
+    session = data.session;
+    if (session) {
+      await loadProfile();
+      loadPlanChecked();
+      showScreen('s-app');
+      renderHeader();
+      renderPlan();
+    } else {
+      showScreen('s-auth');
+    }
+  } else {
+    // No Supabase config → guest mode automatically
+    guestMode();
+  }
+});
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+}
+
+// ─────────────────────────────────────────────
+// AUTH
+// ─────────────────────────────────────────────
+function authTab(t) {
+  document.querySelectorAll('.auth-tab').forEach((el,i) => el.classList.toggle('on', (t==='login'&&i===0)||(t==='register'&&i===1)));
+  document.getElementById('af-login').style.display    = t==='login'    ? 'block':'none';
+  document.getElementById('af-register').style.display = t==='register' ? 'block':'none';
+  document.getElementById('auth-msg').textContent = '';
+}
+
+function setAuthMsg(msg, isErr=true) {
+  const el = document.getElementById('auth-msg');
+  el.textContent = msg;
+  el.className = 'auth-msg ' + (isErr ? 'err' : 'ok');
+}
+
+async function doLogin() {
+  const email = document.getElementById('l-email').value.trim();
+  const pass  = document.getElementById('l-pass').value;
+  if (!email || !pass) { setAuthMsg('メールとパスワードを入力してください'); return; }
+  const btn = event.target; btn.disabled = true;
+  const { error } = await client.auth.signInWithPassword({ email, password: pass });
+  btn.disabled = false;
+  if (error) { setAuthMsg('ログイン失敗: ' + error.message); return; }
+  const { data } = await client.auth.getSession();
+  session = data.session;
+  await loadProfile();
+  loadPlanChecked();
+  showScreen('s-app');
+  renderHeader();
+  renderPlan();
+}
+
+async function doRegister() {
+  const name  = document.getElementById('r-name').value.trim();
+  const email = document.getElementById('r-email').value.trim();
+  const pass  = document.getElementById('r-pass').value;
+  if (!name || !email || !pass) { setAuthMsg('すべての項目を入力してください'); return; }
+  if (pass.length < 6) { setAuthMsg('パスワードは6文字以上にしてください'); return; }
+  const btn = event.target; btn.disabled = true;
+  const { data, error } = await client.auth.signUp({ email, password: pass });
+  btn.disabled = false;
+  if (error) { setAuthMsg('登録失敗: ' + error.message); return; }
+  if (!data.session) {
+    // Email confirmation required
+    setAuthMsg('✅ 確認メールを送信しました。メール内のリンクをクリックしてからログインしてください。', false);
+    return;
+  }
+  session = data.session;
+  profile.display_name = name;
+  // Show onboarding
+  showScreen('s-onboard');
+  renderObKnownGrid();
+}
+
+async function doLogout() {
+  if (client) await client.auth.signOut();
+  session = null; isGuest = false;
+  showScreen('s-auth');
+}
+
+function guestMode() {
+  isGuest = true;
+  const raw = localStorage.getItem(LS_PROFILE);
+  if (raw) { try { profile = JSON.parse(raw); } catch(e){} }
+  profile.known_tasks = profile.known_tasks || [];
+  loadPlanChecked();
+  showScreen('s-app');
+  renderHeader();
+  renderPlan();
+}
+
+// ─────────────────────────────────────────────
+// PROFILE
+// ─────────────────────────────────────────────
+async function loadProfile() {
+  if (isGuest) return;
+  const { data } = await client.from('user_profiles').select('*').eq('user_id', session.user.id).single();
+  if (data) {
+    profile.display_name = data.display_name || '';
+    profile.level        = data.level || 'beginner';
+    profile.known_tasks  = data.known_tasks || [];
+    profile.target_date  = data.target_date || '';
+  }
+}
+
+async function saveProfile() {
+  profile.display_name = document.getElementById('cfg-name').value.trim();
+  profile.level        = document.getElementById('cfg-level').value;
+  profile.target_date  = document.getElementById('cfg-date').value;
+  if (isGuest) {
+    localStorage.setItem(LS_PROFILE, JSON.stringify(profile));
+  } else {
+    await client.from('user_profiles').upsert({ user_id: session.user.id, ...profile, updated_at: new Date().toISOString() });
+  }
+  renderHeader();
+  renderPlan();
+  alert('保存しました');
+}
+
+async function saveKnown() {
+  profile.known_tasks = Array.from(document.querySelectorAll('#cfg-known-grid input:checked')).map(el => el.value);
+  if (isGuest) {
+    localStorage.setItem(LS_PROFILE, JSON.stringify(profile));
+  } else {
+    await client.from('user_profiles').upsert({ user_id: session.user.id, ...profile, updated_at: new Date().toISOString() });
+  }
+  renderPlan();
+  alert('既知設定を保存しました');
+}
+
+function renderCfgTab() {
+  document.getElementById('cfg-name').value  = profile.display_name;
+  document.getElementById('cfg-level').value = profile.level;
+  document.getElementById('cfg-date').value  = profile.target_date;
+  document.getElementById('cfg-email').textContent = isGuest ? 'ゲストモード' : (session?.user?.email || '');
+  const grid = document.getElementById('cfg-known-grid');
+  grid.innerHTML = '';
+  const knownSet = new Set(profile.known_tasks);
+  TASKS.forEach(t => {
+    const checked = knownSet.has(t.id);
+    grid.innerHTML += `<div class="task-row"><input type="checkbox" class="task-check" value="${t.id}" ${checked?'checked':''}><div><div class="task-lbl">${t.lbl}</div><div class="task-meta">${t.ch} · ${t.min}分</div></div></div>`;
+  });
+}
+
+// ─────────────────────────────────────────────
+// ONBOARDING
+// ─────────────────────────────────────────────
+function selLevel(lv, el) {
+  obLevel = lv;
+  document.querySelectorAll('.level-card').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+function ob1Next() {
+  profile.level = obLevel;
+  document.getElementById('ob-1').classList.remove('on');
+  document.getElementById('ob-2').classList.add('on');
+}
+
+function renderObKnownGrid() {
+  const grid = document.getElementById('ob-known-grid');
+  grid.innerHTML = '';
+  TASKS.forEach(t => {
+    grid.innerHTML += `<div class="known-item" onclick="toggleKnownItem('${t.id}',this)">
+      <input type="checkbox" value="${t.id}" id="ok-${t.id}">
+      <div><div class="known-ch">${t.ch}</div><div class="known-item-label">${t.lbl}</div></div>
+    </div>`;
+  });
+}
+
+function toggleKnownItem(id, row) {
+  const cb = document.getElementById('ok-'+id);
+  cb.checked = !cb.checked;
+  row.classList.toggle('sel', cb.checked);
+  if (cb.checked) obKnown.add(id); else obKnown.delete(id);
+}
+
+async function ob2Finish() {
+  profile.known_tasks = Array.from(obKnown);
+  if (!isGuest && session) {
+    await client.from('user_profiles').upsert({ user_id: session.user.id, display_name: profile.display_name, level: profile.level, known_tasks: profile.known_tasks, updated_at: new Date().toISOString() });
+  }
+  loadPlanChecked();
+  showScreen('s-app');
+  renderHeader();
+  renderPlan();
+}
+
+function ob2Skip() { ob2Finish(); }
+function ob2Done()  { ob2Finish(); }
+
+// ─────────────────────────────────────────────
+// HEADER
+// ─────────────────────────────────────────────
+function renderHeader() {
+  const targetDate = profile.target_date ? new Date(profile.target_date) : new Date('2026-06-20');
+  const days = Math.ceil((targetDate - new Date()) / 864e5);
+  document.getElementById('remain').textContent = days > 0 ? `約${days}日` : '試験日！';
+  document.getElementById('hdr-name').textContent = profile.display_name || (isGuest ? 'ゲスト' : 'ユーザー');
+}
+
+// ─────────────────────────────────────────────
+// PLAN
+// ─────────────────────────────────────────────
+function loadPlanChecked() {
+  const raw = localStorage.getItem(LS_PLAN);
+  if (raw) { try { planChecked = new Set(JSON.parse(raw)); } catch(e){} }
+}
+
+function savePlanChecked() {
+  localStorage.setItem(LS_PLAN, JSON.stringify(Array.from(planChecked)));
+}
+
+function toggleKnown() {
+  showKnown = !showKnown;
+  document.getElementById('known-toggle-txt').textContent = showKnown ? '非表示' : '表示';
+  renderPlan();
+}
+
+function renderPlan() {
+  const knownSet = new Set(profile.known_tasks);
+  const body = document.getElementById('plan-body');
+  body.innerHTML = '';
+  let totalTasks = 0, doneTasks = 0, totalMins = 0, remainMins = 0;
+
+  [1,2,3,4].forEach(w => {
+    const weekTasks = TASKS.filter(t => t.w === w);
+    const allDone = weekTasks.every(t => planChecked.has(t.id) || knownSet.has(t.id));
+    const badge = `<span class="week-badge${allDone?' done':''}">Week ${w}</span>`;
+    let rows = '';
+    weekTasks.forEach(t => {
+      const isKnown   = knownSet.has(t.id);
+      const isDone    = planChecked.has(t.id);
+      if (isKnown && !showKnown) return;
+      totalTasks++;
+      totalMins += t.min;
+      if (isDone || isKnown) doneTasks++;
+      else remainMins += t.min;
+      const knownBadge = isKnown ? '<span class="badge-known">既知</span>' : '';
+      const hiBadge    = t.hi    ? '<span class="badge-hi">最重要</span>' : '';
+      rows += `<div class="task-row${isKnown?' known-row':''}">
+        <input type="checkbox" class="task-check" ${isDone||isKnown?'checked':''} ${isKnown?'disabled':''} onchange="toggleTask('${t.id}',this)">
+        <div><div class="task-lbl${isDone?' done':''}">${t.lbl}${knownBadge}${hiBadge}</div><div class="task-meta">${t.ch} · ${t.min}分</div></div>
+      </div>`;
+    });
+    if (!rows) return;
+    body.innerHTML += `<div class="card"><div class="card-title">${badge}<span>Week ${w}　${WEEK_LABELS[w]}</span></div>${rows}</div>`;
+  });
+
+  const pct = totalTasks > 0 ? Math.round(doneTasks/totalTasks*100) : 0;
+  document.getElementById('plan-lbl').textContent = `${doneTasks}/${totalTasks}`;
+  document.getElementById('plan-bar').style.width = pct + '%';
+  const hrs = Math.round(remainMins/60*10)/10;
+  document.getElementById('plan-summary').textContent = `残り推定学習時間: 約${hrs}時間 ／ ${knownSet.size}件を既知としてスキップ中`;
+}
+
+function toggleTask(id, cb) {
+  if (cb.checked) planChecked.add(id); else planChecked.delete(id);
+  savePlanChecked();
+  renderPlan();
+}
+
+// ─────────────────────────────────────────────
+// QUIZ
+// ─────────────────────────────────────────────
+function startQuiz() {
+  qIdx=0; qAns=[]; qAnswered=false;
+  document.getElementById('quiz-start').style.display='none';
+  document.getElementById('quiz-result').style.display='none';
+  document.getElementById('quiz-run').style.display='block';
+  renderQ();
+}
+
+function renderQ() {
+  const q = QUESTIONS[qIdx]; qAnswered=false;
+  document.getElementById('q-cnt').textContent=`問${qIdx+1}/20`;
+  document.getElementById('q-ch').textContent=q.ch;
+  document.getElementById('q-txt').textContent=q.t;
+  const opts=document.getElementById('q-opts'); opts.innerHTML='';
+  q.o.forEach((op,i)=>{
+    const b=document.createElement('button');
+    b.className='q-opt'; b.textContent=['①','②','③','④'][i]+' '+op;
+    b.onclick=()=>selectA(i); opts.appendChild(b);
+  });
+  document.getElementById('q-exp').classList.remove('on');
+  document.getElementById('q-next').classList.remove('on');
+  const prog=document.getElementById('q-prog'); prog.innerHTML='';
+  QUESTIONS.forEach((_,i)=>{
+    const d=document.createElement('div'); d.className='qd'; d.textContent=i+1;
+    if(i<qIdx) d.classList.add(qAns[i]===QUESTIONS[i].a?'c':'w');
+    else if(i===qIdx) d.classList.add('cur');
+    prog.appendChild(d);
+  });
+}
+
+function selectA(idx) {
+  if(qAnswered) return; qAnswered=true; qAns.push(idx);
+  const q=QUESTIONS[qIdx];
+  document.querySelectorAll('.q-opt').forEach((b,i)=>{ b.disabled=true; if(i===q.a) b.classList.add('c'); else if(i===idx&&idx!==q.a) b.classList.add('w'); });
+  const ex=document.getElementById('q-exp');
+  ex.innerHTML=(idx===q.a?'✅ <strong>正解！</strong><br>':'❌ <strong>不正解。正解は'+['①','②','③','④'][q.a]+'です。</strong><br>')+q.e;
+  ex.classList.add('on');
+  const nb=document.getElementById('q-next');
+  nb.textContent=qIdx<19?'次の問題へ →':'結果を見る';
+  nb.classList.add('on');
+}
+
+function nextQ() {
+  qIdx++;
+  if(qIdx>=20) showResult(); else renderQ();
+}
+
+async function showResult() {
+  document.getElementById('quiz-run').style.display='none';
+  document.getElementById('quiz-result').style.display='block';
+  const correct=qAns.filter((a,i)=>a===QUESTIONS[i].a).length;
+  const pct=Math.round(correct/20*100);
+  document.getElementById('s-num').textContent=correct;
+  const arc=document.getElementById('s-arc');
+  arc.style.strokeDashoffset=289*(1-pct/100);
+  arc.style.stroke=pct>=80?'#10b981':pct>=60?'#f59e0b':'#ef4444';
+  document.getElementById('s-msg').textContent=pct>=80?'🎉 合格圏！':pct>=60?'📈 あと一歩！':'💪 基礎を固めよう';
+  document.getElementById('s-sub').textContent=pct>=80?'本番でも十分狙えます。':pct>=60?'苦手章を重点復習しましょう。':'Week1〜2をしっかり取り組みましょう。';
+
+  const chC={},chCo={};
+  CHAPTERS.forEach(ch=>{chC[ch]=0;chCo[ch]=0;});
+  QUESTIONS.forEach((q,i)=>{chC[q.ch]++;if(qAns[i]===q.a)chCo[q.ch]++;});
+  const bars=document.getElementById('ch-bars'); bars.innerHTML='';
+  CHAPTERS.forEach(ch=>{
+    const p=Math.round(chCo[ch]/chC[ch]*100);
+    bars.innerHTML+=`<div class="ch-row"><div class="ch-nm">${ch}</div><div class="ch-bw"><div class="ch-bf" style="width:${p}%;background:${CH_COLORS[ch]}"></div></div><div class="ch-sc" style="color:${p>=70?'var(--ok)':'var(--ng)'}">${chCo[ch]}/${chC[ch]}</div></div>`;
+  });
+  const weak=CHAPTERS.filter(ch=>chCo[ch]/chC[ch]<0.7);
+  document.getElementById('s-weak').innerHTML=weak.length===0?'✅ 全章70%以上。弱点なし！':'⚠️ <strong>重点復習推奨：</strong>'+weak.join('、');
+
+  // Save score
+  const byChapter={};
+  CHAPTERS.forEach(ch=>{ byChapter[ch]={correct:chCo[ch],total:chC[ch],pct:Math.round(chCo[ch]/chC[ch]*100)}; });
+  const record={date:new Date().toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}),total:correct,pct,byChapter};
+  if (!isGuest && session && client) {
+    await client.from('quiz_scores').insert({ user_id: session.user.id, total: correct, pct, by_chapter: byChapter });
+  }
+  // Also save to localStorage as cache
+  const hist=getHist(); hist.unshift(record); if(hist.length>10) hist.pop();
+  localStorage.setItem(LS_HIST, JSON.stringify(hist));
+}
+
+function retryQuiz() {
+  document.getElementById('quiz-result').style.display='none';
+  document.getElementById('quiz-start').style.display='block';
+}
+
+// ─────────────────────────────────────────────
+// HISTORY
+// ─────────────────────────────────────────────
+function getHist() { try{return JSON.parse(localStorage.getItem(LS_HIST))||[];}catch(e){return [];} }
+
+async function renderHist() {
+  let hist = getHist();
+  // Try to load from Supabase
+  if (!isGuest && session && client) {
+    const { data } = await client.from('quiz_scores').select('*').eq('user_id', session.user.id).order('created_at', {ascending:false}).limit(10);
+    if (data && data.length > 0) {
+      hist = data.map(r=>({ date: new Date(r.created_at).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}), total:r.total, pct:r.pct, byChapter:r.by_chapter }));
+      localStorage.setItem(LS_HIST, JSON.stringify(hist));
+    }
+  }
+
+  document.getElementById('hist-count').textContent = hist.length + '回分';
+  document.getElementById('clr-btn').style.display = hist.length > 0 ? 'block' : 'none';
+  document.getElementById('analysis-card').style.display = hist.length > 0 ? 'block' : 'none';
+
+  if (hist.length === 0) {
+    document.getElementById('hist-list').innerHTML='<div class="empty">まだ受験記録がありません。</div>';
+    document.getElementById('trend-area').innerHTML='<div class="empty">模擬試験を受けると推移が表示されます</div>';
+    return;
+  }
+
+  // Attempt cards
+  const list=document.getElementById('hist-list'); list.innerHTML='';
+  hist.forEach((r,idx)=>{
+    const c=r.pct>=80?'var(--ok)':r.pct>=60?'var(--warn)':'var(--ng)';
+    let bars='';
+    CHAPTERS.forEach(ch=>{
+      const p=r.byChapter[ch]?.pct||0;
+      bars+=`<div class="ab-row"><div class="ab-lbl">${ch}</div><div class="ab-bw"><div class="ab-bf" style="width:${p}%;background:${CH_COLORS[ch]}"></div></div><div class="ab-val" style="color:${p>=70?'var(--ok)':'var(--ng)'}">${r.byChapter[ch]?.correct||0}/${r.byChapter[ch]?.total||0}</div></div>`;
+    });
+    list.innerHTML+=`<div class="att-card"><div class="att-hdr"><div><div class="att-score" style="color:${c}">${r.total}/20問 (${r.pct}%)</div><div class="att-date">${idx===0?'最新 ':''}第${hist.length-idx}回 · ${r.date}</div></div><div style="font-size:24px">${r.pct>=80?'🥇':r.pct>=60?'🥈':'💪'}</div></div>${bars}</div>`;
+  });
+
+  // Trend
+  const n=Math.min(hist.length,5);
+  const rev=[...hist].slice(0,n).reverse();
+  let thtml=`<div style="font-size:11px;color:var(--mut);margin-bottom:6px">← 古い　新しい →（直近${n}回）</div>`;
+  CHAPTERS.forEach(ch=>{
+    const dots=rev.map(r=>{const p=r.byChapter[ch]?.pct||0;const bg=p>=80?'#10b981':p>=60?'#f59e0b':'#ef4444';return `<div class="td" style="background:${bg}">${p}%</div>`;}).join('');
+    let arrow='',av='',ac='var(--mut)';
+    if(hist.length>=2){
+      const d=(hist[0].byChapter[ch]?.pct||0)-(hist[1].byChapter[ch]?.pct||0);
+      if(d>10){arrow='↑';av='+'+d+'%';ac='var(--ok)';}else if(d>0){arrow='↗';av='+'+d+'%';ac='var(--ok)';}
+      else if(d<-10){arrow='↓';av=d+'%';ac='var(--ng)';}else if(d<0){arrow='↘';av=d+'%';ac='var(--ng)';}
+      else{arrow='→';av='±0';ac='var(--mut)';}
+    }
+    thtml+=`<div class="trend-row"><div class="trend-ch" style="color:${CH_COLORS[ch]}">${ch}</div><div class="trend-dots">${dots}</div><div class="trend-arrow" style="color:${ac}">${arrow}</div><div class="trend-val" style="color:${ac}">${av}</div></div>`;
+  });
+  document.getElementById('trend-area').innerHTML=thtml;
+
+  // Issue analysis
+  const recent=Math.min(hist.length,3);
+  const avg={};
+  CHAPTERS.forEach(ch=>{ const s=hist.slice(0,recent).map(r=>r.byChapter[ch]?.pct||0); avg[ch]=Math.round(s.reduce((a,b)=>a+b,0)/s.length); });
+  const weak2=CHAPTERS.filter(ch=>avg[ch]<60).sort((a,b)=>avg[a]-avg[b]);
+  const mid=CHAPTERS.filter(ch=>avg[ch]>=60&&avg[ch]<80);
+  const str=CHAPTERS.filter(ch=>avg[ch]>=80);
+  let html='';
+  weak2.forEach(ch=>{ html+=`<div class="issue-card issue-h"><div class="issue-ttl">🔴 要重点復習：${ch}（直近${recent}回平均 ${avg[ch]}%）</div><div class="issue-body">${ADVICE[ch]}</div></div>`; });
+  mid.forEach(ch=>{ html+=`<div class="issue-card issue-m"><div class="issue-ttl">🟡 もう一歩：${ch}（直近${recent}回平均 ${avg[ch]}%）</div><div class="issue-body">${ADVICE[ch]}</div></div>`; });
+  if(str.length>0) html+=`<div class="issue-card issue-ok"><div class="issue-ttl">✅ 安定：${str.join('・')}</div><div class="issue-body">直近${recent}回平均80%以上。最終確認程度で十分です。</div></div>`;
+  if(hist.length<3) html+=`<div style="font-size:12px;color:var(--mut);margin-top:8px">※ あと${3-hist.length}回受験すると精度の高い分析が可能になります。</div>`;
+  document.getElementById('issue-list').innerHTML=html;
+}
+
+async function clearHist() {
+  if(!confirm('受験履歴をすべて削除しますか？')) return;
+  localStorage.removeItem(LS_HIST);
+  if(!isGuest&&session&&client) await client.from('quiz_scores').delete().eq('user_id',session.user.id);
+  renderHist();
+}
+
+// ─────────────────────────────────────────────
+// TAB SWITCHING
+// ─────────────────────────────────────────────
+function showTab(name, el) {
+  document.querySelectorAll('.app-tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('on'));
+  document.getElementById('tab-'+name).classList.add('on');
+  if(el) el.classList.add('on');
+  else document.querySelectorAll('.app-tab').forEach(t=>{ if(t.getAttribute('onclick')?.includes("'"+name+"'")) t.classList.add('on'); });
+  if(name==='hist') renderHist();
+  if(name==='cfg')  renderCfgTab();
+}
+</script>
+</body>
+</html>
