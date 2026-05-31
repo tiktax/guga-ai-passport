@@ -308,11 +308,6 @@ input[type="date"]::-webkit-calendar-picker-indicator{background:var(--p);border
 @keyframes toast-out{from{opacity:1;transform:translateX(-50%) translateY(0);}to{opacity:0;transform:translateX(-50%) translateY(-8px);}}
 @media(prefers-reduced-motion:reduce){.quota-banner,.quota-overlay,*{animation-duration:.01s!important;}}
 
-/* ── Task title clamp ── */
-.task-lbl-inner{display:block;}
-.task-lbl-inner.clamped{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-.task-lbl-more{color:var(--p);font-size:12px;cursor:pointer;display:inline-block;margin-top:3px;font-weight:600;user-select:none;}
-
 /* ── Task notes ── */
 .task-notes{display:none;margin:8px 0 4px 0;background:#f0f4ff;border-left:3px solid var(--p);border-radius:0 8px 8px 0;padding:10px 12px;}
 .task-notes.open{display:block;}
@@ -597,26 +592,26 @@ const CH_COLORS  = {'第1章':'#6366f1','第2章':'#10b981','第3章':'#f59e0b',
 const CH_TOTAL   = {'第1章':4,'第2章':4,'第3章':4,'第4章':5,'第5章':3};
 
 const TASKS = [
-  {id:'t1',w:1,ch:'第1章',lbl:'AIの3ブーム・ダートマス会議・弱いAI/強いAI/シンギュラリティを整理',min:45,hi:false},
-  {id:'t2',w:1,ch:'第2章',lbl:'Transformer → GPT系譜（GPT-1〜GPT-5, o1/o3/o4）の時系列を把握',min:60,hi:false},
-  {id:'t3',w:1,ch:'第2章',lbl:'VAE・GAN・RNN・LSTMの一言定義を整理',min:30,hi:false},
-  {id:'t4',w:1,ch:'第2章',lbl:'RLHF・ハルシネーション・アライメント・ファインチューニングを試験文脈で整理',min:45,hi:false},
-  {id:'t5',w:1,ch:'第1章',lbl:'機械学習の手法（教師あり/なし/強化/半教師あり）の定義と違いを確認',min:30,hi:false},
-  {id:'t6',w:2,ch:'第4章',lbl:'知的財産権5種（著作権・特許・商標・意匠・肖像権）とAI生成物への適用',min:60,hi:true},
-  {id:'t7',w:2,ch:'第4章',lbl:'AI新法（2025年6月公布）：必要性・基本構造・AI事業者GL第1.1版との関係',min:75,hi:true},
-  {id:'t8',w:2,ch:'第4章',lbl:'AI社会原則3理念（Dignity・D&I・Sustainability）と共通指針10項目',min:30,hi:false},
-  {id:'t9',w:2,ch:'第4章',lbl:'AI事業者GL：AI開発者/提供者/利用者の3主体の役割分担',min:30,hi:false},
-  {id:'t10',w:2,ch:'第4章',lbl:'個人情報保護法：要配慮個人情報・機微情報・匿名加工情報の違いを整理',min:30,hi:false},
-  {id:'t11',w:3,ch:'第3章',lbl:'ディープフェイク（技術・事件・法的問題）、ディスインフォメーションの定義',min:30,hi:false},
-  {id:'t12',w:3,ch:'第3章',lbl:'RAG：チャンク・ベクトルDB・検索拡張生成の仕組みを試験用語で整理',min:20,hi:false},
-  {id:'t13',w:3,ch:'第3章',lbl:'AIエージェント：GenSpark・Manus・Skywork AI・MCPの概要把握',min:25,hi:false},
-  {id:'t14',w:3,ch:'第4章',lbl:'セキュリティ用語：スミッシング・ヴィッシング・スピアフィッシング・ランサムウェアの違い',min:30,hi:false},
-  {id:'t15',w:3,ch:'第5章',lbl:'LLMパラメータ：Temperature・Top-p・プレトレーニングの定義確認',min:20,hi:false},
-  {id:'t16',w:4,ch:'演習',lbl:'模擬試験20問を解いてスコア確認',min:30,hi:false},
-  {id:'t17',w:4,ch:'演習',lbl:'弱点章を重点復習（履歴タブで確認）',min:45,hi:false},
-  {id:'t18',w:4,ch:'演習',lbl:'2回目模擬試験。時間配分確認（60問／60分＝1分／問）',min:30,hi:false},
-  {id:'t19',w:4,ch:'確認',lbl:'最新AIモデル一覧（GPT-5, o3, o4, Claude系, Gemini系）の特徴を確認',min:30,hi:false},
-  {id:'t20',w:4,ch:'確認',lbl:'AI新法・著作権・個人情報の重要用語を最終確認して試験当日へ',min:30,hi:false},
+  {id:'t1',w:1,ch:'第1章',short:'AIの3ブーム・シンギュラリティ',lbl:'AIの3ブーム・ダートマス会議・弱いAI/強いAI/シンギュラリティを整理',min:45,hi:false},
+  {id:'t2',w:1,ch:'第2章',short:'Transformer・GPT系譜',lbl:'Transformer → GPT系譜（GPT-1〜GPT-5, o1/o3/o4）の時系列を把握',min:60,hi:false},
+  {id:'t3',w:1,ch:'第2章',short:'VAE・GAN・RNN・LSTM',lbl:'VAE・GAN・RNN・LSTMの一言定義を整理',min:30,hi:false},
+  {id:'t4',w:1,ch:'第2章',short:'RLHF・ハルシネーション・アライメント',lbl:'RLHF・ハルシネーション・アライメント・ファインチューニングを試験文脈で整理',min:45,hi:false},
+  {id:'t5',w:1,ch:'第1章',short:'機械学習4手法',lbl:'機械学習の手法（教師あり/なし/強化/半教師あり）の定義と違いを確認',min:30,hi:false},
+  {id:'t6',w:2,ch:'第4章',short:'知的財産権5種',lbl:'知的財産権5種（著作権・特許・商標・意匠・肖像権）とAI生成物への適用',min:60,hi:true},
+  {id:'t7',w:2,ch:'第4章',short:'AI新法の基本構造',lbl:'AI新法（2025年6月公布）：必要性・基本構造・AI事業者GL第1.1版との関係',min:75,hi:true},
+  {id:'t8',w:2,ch:'第4章',short:'AI社会原則3理念',lbl:'AI社会原則3理念（Dignity・D&I・Sustainability）と共通指針10項目',min:30,hi:false},
+  {id:'t9',w:2,ch:'第4章',short:'AI事業者GL・3主体',lbl:'AI事業者GL：AI開発者/提供者/利用者の3主体の役割分担',min:30,hi:false},
+  {id:'t10',w:2,ch:'第4章',short:'個人情報保護法',lbl:'個人情報保護法：要配慮個人情報・機微情報・匿名加工情報の違いを整理',min:30,hi:false},
+  {id:'t11',w:3,ch:'第3章',short:'ディープフェイクの脅威',lbl:'ディープフェイク（技術・事件・法的問題）、ディスインフォメーションの定義',min:30,hi:false},
+  {id:'t12',w:3,ch:'第3章',short:'RAGの仕組み',lbl:'RAG：チャンク・ベクトルDB・検索拡張生成の仕組みを試験用語で整理',min:20,hi:false},
+  {id:'t13',w:3,ch:'第3章',short:'AIエージェント・MCP',lbl:'AIエージェント：GenSpark・Manus・Skywork AI・MCPの概要把握',min:25,hi:false},
+  {id:'t14',w:3,ch:'第4章',short:'セキュリティ攻撃4種',lbl:'セキュリティ用語：スミッシング・ヴィッシング・スピアフィッシング・ランサムウェアの違い',min:30,hi:false},
+  {id:'t15',w:3,ch:'第5章',short:'Temperature・プロンプト4要素',lbl:'LLMパラメータ：Temperature・Top-p・プレトレーニングの定義確認',min:20,hi:false},
+  {id:'t16',w:4,ch:'演習',short:'模擬試験①（20問）',lbl:'模擬試験20問を解いてスコア確認',min:30,hi:false},
+  {id:'t17',w:4,ch:'演習',short:'弱点章を集中復習',lbl:'弱点章を重点復習（履歴タブで確認）',min:45,hi:false},
+  {id:'t18',w:4,ch:'演習',short:'模擬試験②（時間計測）',lbl:'2回目模擬試験。時間配分確認（60問／60分＝1分／問）',min:30,hi:false},
+  {id:'t19',w:4,ch:'確認',short:'最新AIモデル比較',lbl:'最新AIモデル一覧（GPT-5, o3, o4, Claude系, Gemini系）の特徴を確認',min:30,hi:false},
+  {id:'t20',w:4,ch:'確認',short:'最終確認・試験当日へ',lbl:'AI新法・著作権・個人情報の重要用語を最終確認して試験当日へ',min:30,hi:false},
 ];
 
 const WEEK_LABELS = {1:'理論用語の試験用語化',2:'法律・著作権・AI新法',3:'最新動向＋セキュリティ',4:'模擬試験・弱点補強'};
@@ -973,19 +968,8 @@ function renderHeader() {
 // ADHD TODAY VIEW — helpers
 // ─────────────────────────────────────────────
 function taskTitleHTML(t) {
-  const CLAMP_AT = 22;
-  if (t.lbl.length <= CLAMP_AT) {
-    return `<span class="task-lbl-inner">${t.lbl}</span>`;
-  }
-  return `<span class="task-lbl-inner clamped" id="tlt-${t.id}">${t.lbl}</span><span class="task-lbl-more" id="tlt-btn-${t.id}" onclick="toggleTaskTitle('${t.id}')">もっと見る ▼</span>`;
-}
-function toggleTaskTitle(id) {
-  const el  = document.getElementById('tlt-' + id);
-  const btn = document.getElementById('tlt-btn-' + id);
-  if (!el || !btn) return;
-  const collapsed = el.classList.contains('clamped');
-  el.classList.toggle('clamped', !collapsed);
-  btn.textContent = collapsed ? '折りたたむ ▲' : 'もっと見る ▼';
+  // short = スキャン用の短いタイトル。lbl = 📖で展開される詳細説明
+  return `<span class="task-lbl-inner">${t.short || t.lbl}</span>`;
 }
 
 function taskNoteHTML(id) {
