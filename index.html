@@ -5,10 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>生成AIパスポート 学習ガイド</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700;900&display=swap" rel="stylesheet">
 <style>
-:root{--p:#4f46e5;--pl:#818cf8;--ok:#10b981;--warn:#f59e0b;--ng:#ef4444;--bg:#f8fafc;--card:#fff;--txt:#1e293b;--mut:#64748b;--bdr:#e2e8f0;}
+:root{--p:#4f46e5;--p2:#7c3aed;--pl:#818cf8;--ok:#059669;--ok-l:#d1fae5;--warn:#d97706;--warn-l:#fef3c7;--ng:#dc2626;--ng-l:#fee2e2;--bg:#f1f5f9;--card:#fff;--txt:#1e293b;--mut:#64748b;--bdr:#e2e8f0;}
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;}
+body{font-family:'Noto Sans JP',-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;}
 
 /* ── screens ── */
 .screen{display:none;min-height:100vh;}
@@ -63,13 +65,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;bac
 .btn-sec{flex:1;padding:12px;background:var(--bdr);color:var(--txt);border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;}
 
 /* app header */
-.app-header{background:var(--p);color:#fff;padding:14px 16px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.2);}
+.app-header{background:linear-gradient(135deg,var(--p) 0%,var(--p2) 100%);color:#fff;padding:14px 16px 0;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(79,70,229,.35);}
+.header-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
 .app-header h1{font-size:16px;font-weight:700;}
 .app-header p{font-size:11px;opacity:.8;margin-top:2px;}
+.header-progress{padding:0 0 10px;}
+.header-progress-lbl{display:flex;justify-content:space-between;font-size:11px;opacity:.85;margin-bottom:4px;}
+.header-progress-bar{background:rgba(255,255,255,.25);border-radius:4px;height:5px;}
+.header-progress-fill{background:#fbbf24;border-radius:4px;height:100%;transition:width .4s ease;}
 
 /* tabs */
-.app-tabs{display:flex;background:#fff;border-bottom:2px solid var(--bdr);position:sticky;top:56px;z-index:99;}
-.app-tab{flex:1;min-width:60px;padding:10px 2px;text-align:center;font-size:11px;font-weight:600;color:var(--mut);border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;}
+.app-tabs{display:flex;background:#fff;border-bottom:1px solid var(--bdr);position:sticky;top:92px;z-index:99;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+.app-tab{flex:1;padding:8px 2px 6px;text-align:center;font-size:10px;font-weight:600;color:var(--mut);border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px;display:flex;flex-direction:column;align-items:center;gap:3px;transition:color .15s;}
+.app-tab .tab-icon{font-size:19px;line-height:1;}
 .app-tab.on{color:var(--p);border-bottom-color:var(--p);}
 
 /* tab content */
@@ -94,15 +102,26 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;bac
 /* plan tasks */
 .week-badge{background:var(--p);color:#fff;border-radius:20px;padding:2px 10px;font-size:12px;font-weight:700;flex-shrink:0;}
 .week-badge.done{background:var(--ok);}
-.task-row{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--bdr);}
+.task-row{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-bottom:1px solid var(--bdr);border-left:4px solid transparent;transition:background .15s;}
 .task-row:last-child{border-bottom:none;}
-.task-row.known-row{opacity:.45;}
-.task-check{width:18px;height:18px;accent-color:var(--p);margin-top:2px;flex-shrink:0;cursor:pointer;}
+.task-row.known-row{opacity:.5;}
+.task-row.hi-row{border-left-color:var(--ng);background:#fff8f8;}
+.task-row.done-row{border-left-color:var(--ok);background:#f0fdf4;}
+.task-check{
+  appearance:none;-webkit-appearance:none;
+  width:20px;height:20px;border:2px solid var(--bdr);border-radius:6px;
+  background:#fff;cursor:pointer;flex-shrink:0;margin-top:1px;position:relative;
+  transition:all .15s;
+}
+.task-check:checked{background:var(--ok);border-color:var(--ok);animation:check-pop .25s ease;}
+.task-check:checked::after{content:'✓';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:12px;font-weight:900;}
+.task-check:disabled{opacity:.5;cursor:not-allowed;}
+@keyframes check-pop{0%{transform:scale(.7);}60%{transform:scale(1.2);}100%{transform:scale(1);}}
 .task-lbl{font-size:13px;line-height:1.5;}
 .task-lbl.done{text-decoration:line-through;color:var(--mut);}
 .task-meta{font-size:11px;color:var(--mut);margin-top:2px;}
-.badge-known{display:inline-block;background:#d1fae5;color:#065f46;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:4px;}
-.badge-hi{display:inline-block;background:#fee2e2;color:#dc2626;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:4px;}
+.badge-known{display:inline-block;background:var(--ok-l);color:#065f46;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:4px;}
+.badge-hi{display:inline-block;background:var(--ng-l);color:var(--ng);border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:4px;}
 .toggle-known{font-size:12px;color:var(--p);cursor:pointer;margin-bottom:8px;display:inline-block;}
 
 /* quiz */
@@ -172,8 +191,105 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;bac
 
 /* empty state */
 .empty{text-align:center;padding:40px 20px;color:var(--mut);font-size:14px;}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center;}
+.empty-icon{font-size:44px;margin-bottom:14px;filter:grayscale(.2);}
+.empty-title{font-size:15px;font-weight:700;color:var(--txt);margin-bottom:6px;}
+.empty-desc{font-size:13px;color:var(--mut);line-height:1.7;margin-bottom:18px;}
+.btn-ghost{background:transparent;border:1.5px solid var(--p);color:var(--p);font-size:13px;font-weight:600;padding:9px 22px;border-radius:10px;cursor:pointer;}
 
 @media(max-width:360px){.app-tab{font-size:10px;} .q-txt{font-size:14px;}}
+
+/* ── countdown urgency ── */
+.remain-count{font-size:24px;font-weight:900;line-height:1.1;text-align:right;}
+.remain-count.ok{color:#a5f3fc;}
+.remain-count.warn{color:#fde68a;}
+.remain-count.urgent{color:#fca5a5;animation:cdpulse 1.2s ease-in-out infinite;}
+.remain-count.today{color:#fca5a5;font-size:16px;}
+@keyframes cdpulse{0%,100%{opacity:1;}50%{opacity:.6;}}
+.remain-unit{font-size:11px;opacity:.8;text-align:right;margin-top:2px;}
+
+/* ── header inner max-width wrapper ── */
+.header-inner{max-width:680px;margin:0 auto;}
+
+/* ── quiz last score card ── */
+.lscore-total{font-size:16px;font-weight:800;margin-bottom:10px;}
+.lscore-row{display:flex;align-items:center;gap:8px;margin:4px 0;font-size:12px;}
+.lscore-ch{width:52px;flex-shrink:0;font-weight:600;}
+.lscore-bw{flex:1;height:8px;background:var(--bdr);border-radius:4px;overflow:hidden;}
+.lscore-bf{height:100%;border-radius:4px;}
+.lscore-val{width:28px;text-align:right;font-size:11px;font-weight:700;}
+
+/* ── known toggle as button ── */
+.toggle-known-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;background:rgba(79,70,229,.1);border:1.5px solid rgba(79,70,229,.3);border-radius:20px;font-size:12px;font-weight:600;color:var(--p);cursor:pointer;transition:all .15s;}
+.toggle-known-btn:hover{background:rgba(79,70,229,.2);}
+
+/* ── date input ── */
+input[type="date"]{color-scheme:light;}
+input[type="date"]::-webkit-calendar-picker-indicator{background:var(--p);border-radius:4px;padding:2px 4px;cursor:pointer;filter:invert(1);}
+
+/* ── ADHD Today View ── */
+.today-view{background:#f8fafc;border-radius:12px;padding:14px 14px 10px;margin-bottom:10px;transition:background .4s ease;}
+.today-view.done{background:#f0fdf4;}
+.today-ring-wrap{position:relative;width:96px;height:96px;margin:0 auto 10px;}
+.today-ring-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.today-ring-num{font-size:26px;font-weight:900;line-height:1;color:var(--txt);}
+.today-ring-den{font-size:11px;color:var(--mut);margin-top:2px;}
+.today-tasks-label{font-size:13px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;}
+.today-time-hint{font-size:12px;color:var(--mut);margin-top:8px;text-align:center;}
+.today-global-hint{font-size:12px;color:var(--mut);text-align:center;margin-top:8px;line-height:1.6;}
+.today-view-all-link{display:block;text-align:center;font-size:12px;color:var(--mut);cursor:pointer;margin-top:8px;padding:4px;user-select:none;}
+.today-view-all-link:hover{color:var(--p);}
+.today-done-heading{font-size:20px;font-weight:900;text-align:center;color:var(--ok);margin-bottom:4px;}
+.today-done-sub{font-size:12px;color:var(--mut);text-align:center;margin-bottom:12px;}
+.today-done-list{list-style:none;margin-bottom:12px;}
+.today-done-list li{font-size:13px;color:#065f46;padding:3px 0;display:flex;align-items:center;gap:6px;}
+.tomorrow-preview{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 12px;font-size:12px;color:var(--txt);margin-bottom:12px;}
+.tomorrow-preview-label{font-size:10px;font-weight:700;color:var(--p);margin-bottom:3px;text-transform:uppercase;letter-spacing:.05em;}
+
+/* ── Streak ── */
+.streak-wrap{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#fff;border:1px solid var(--bdr);border-radius:10px;margin-bottom:10px;}
+.streak-icon{font-size:22px;line-height:1;display:inline-block;}
+.streak-count{font-size:22px;font-weight:900;line-height:1;}
+.streak-label{font-size:11px;color:var(--mut);margin-top:1px;}
+.streak-best{font-size:11px;color:var(--mut);margin-left:auto;text-align:right;}
+
+/* ── Defer task ── */
+.defer-btn{background:none;border:none;cursor:pointer;font-size:11px;color:var(--mut);padding:3px 7px;border-radius:4px;flex-shrink:0;transition:all .15s;}
+.defer-btn:hover{color:var(--p);background:rgba(79,70,229,.09);}
+
+/* ── Quota banner ── */
+.quota-overlay{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:998;pointer-events:none;opacity:0;}
+.quota-overlay.show{animation:qov-in .2s ease-out forwards,qov-out .28s ease-in 2.2s forwards;}
+.quota-banner{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.82);z-index:999;background:linear-gradient(135deg,#10b981,#059669);color:#fff;border-radius:16px;padding:24px 32px;text-align:center;opacity:0;pointer-events:none;min-width:220px;max-width:300px;}
+.quota-banner.show{animation:qb-in .35s cubic-bezier(.34,1.56,.64,1) forwards,qb-out .28s ease-in 2.2s forwards;}
+.quota-banner-title{font-size:20px;font-weight:800;margin-bottom:6px;}
+.quota-banner-sub{font-size:13px;opacity:.9;}
+
+/* ── Defer toast ── */
+#defer-toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(12px);z-index:999;background:rgba(30,30,30,.88);color:#fff;padding:8px 20px;border-radius:24px;font-size:13px;white-space:nowrap;opacity:0;pointer-events:none;}
+
+/* ── Keyframes ── */
+@keyframes qov-in{to{opacity:1;}}
+@keyframes qov-out{to{opacity:0;}}
+@keyframes qb-in{to{opacity:1;transform:translate(-50%,-50%) scale(1);}}
+@keyframes qb-out{to{opacity:0;transform:translate(-50%,-50%) scale(.92);}}
+@keyframes ring-pulse{0%{transform:scale(1);opacity:.8;}60%{transform:scale(1.8);opacity:.3;}100%{transform:scale(2.4);opacity:0;}}
+@keyframes row-complete{0%{background:transparent;}15%{background:rgba(5,150,105,.18);}100%{background:rgba(5,150,105,.06);}}
+@keyframes flame-celebrate{0%{transform:scale(1) rotate(0);filter:brightness(1);}20%{transform:scale(1.35) rotate(-8deg);filter:brightness(1.4);}60%{transform:scale(1.3) rotate(-4deg);filter:brightness(1.3);}100%{transform:scale(1) rotate(0);filter:brightness(1);}}
+@keyframes ring-complete-pulse{0%{filter:drop-shadow(0 0 0px #059669);}40%{filter:drop-shadow(0 0 8px #059669);}100%{filter:drop-shadow(0 0 3px #059669);}}
+@keyframes task-defer-slide{0%{transform:translateX(0);opacity:1;}40%{transform:translateX(8%);opacity:.9;}75%{transform:translateX(110%);opacity:0;}100%{transform:translateX(110%);opacity:0;max-height:0;padding:0;margin:0;overflow:hidden;}}
+@keyframes toast-in{from{opacity:0;transform:translateX(-50%) translateY(12px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
+@keyframes toast-out{from{opacity:1;transform:translateX(-50%) translateY(0);}to{opacity:0;transform:translateX(-50%) translateY(-8px);}}
+@media(prefers-reduced-motion:reduce){.quota-banner,.quota-overlay,*{animation-duration:.01s!important;}}
+
+/* ── Task notes ── */
+.task-notes{display:none;margin:6px 0 2px 0;background:#f0f4ff;border-left:3px solid var(--p);border-radius:0 8px 8px 0;padding:8px 10px;}
+.task-notes.open{display:block;}
+.task-notes li{font-size:12px;color:var(--txt);padding:2px 0;line-height:1.6;list-style:none;display:flex;align-items:flex-start;gap:5px;}
+.task-notes li::before{content:'▸';color:var(--p);font-weight:700;flex-shrink:0;margin-top:1px;}
+.notes-toggle{background:none;border:none;cursor:pointer;font-size:14px;padding:2px 5px;border-radius:4px;flex-shrink:0;transition:all .15s;line-height:1;}
+.notes-toggle:hover{background:rgba(79,70,229,.12);}
+.notes-toggle.open{background:rgba(79,70,229,.12);}
 </style>
 </head>
 <body>
@@ -250,31 +366,48 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;bac
 <!-- ============ SCREEN: App ============ -->
 <div id="s-app" class="screen">
   <div class="app-header">
-    <h1>🎯 生成AIパスポート 学習ガイド</h1>
-    <p>試験まで <span id="remain"></span> ／ <span id="hdr-name"></span></p>
+    <div class="header-inner">
+      <div class="header-top">
+        <div>
+          <h1>🎯 生成AIパスポート 学習ガイド</h1>
+          <p id="hdr-name" style="font-size:11px;opacity:.8;margin-top:2px;"></p>
+        </div>
+        <div style="text-align:right;flex-shrink:0;padding-left:12px;">
+          <div class="remain-count ok" id="remain-count">--日</div>
+          <div class="remain-unit" id="remain-unit">試験まで</div>
+        </div>
+      </div>
+      <div class="header-progress">
+        <div class="header-progress-lbl"><span>学習進捗</span><span id="today-progress-lbl">0 / 0 タスク完了</span></div>
+        <div class="header-progress-bar"><div class="header-progress-fill" id="today-progress-fill" style="width:0%"></div></div>
+      </div>
+    </div>
   </div>
   <div class="app-tabs">
-    <button class="app-tab on"  onclick="showTab('plan',this)">📅 プラン</button>
-    <button class="app-tab"     onclick="showTab('quiz',this)">✏️ 試験</button>
-    <button class="app-tab"     onclick="showTab('hist',this)">📈 履歴</button>
-    <button class="app-tab"     onclick="showTab('cfg',this)">⚙️ 設定</button>
+    <button class="app-tab on"  onclick="showTab('plan',this)"><span class="tab-icon">📅</span>プラン</button>
+    <button class="app-tab"     onclick="showTab('quiz',this)"><span class="tab-icon">✏️</span>試験</button>
+    <button class="app-tab"     onclick="showTab('hist',this)"><span class="tab-icon">📊</span>履歴</button>
+    <button class="app-tab"     onclick="showTab('cfg',this)"><span class="tab-icon">⚙️</span>設定</button>
   </div>
 
   <!-- ── TAB: プラン ── -->
   <div id="tab-plan" class="tab-pane on">
-    <div class="card">
-      <div class="card-title">📈 全体進捗</div>
-      <div class="prog-wrap">
-        <div class="prog-lbl"><span>完了タスク</span><span id="plan-lbl">0/0</span></div>
-        <div class="prog-bar"><div class="prog-fill" id="plan-bar" style="width:0%"></div></div>
+    <div id="today-view-container"></div>
+    <div id="plan-all-view" style="display:none">
+      <div class="card">
+        <div class="card-title">📈 全体進捗</div>
+        <div class="prog-wrap">
+          <div class="prog-lbl"><span>完了タスク</span><span id="plan-lbl">0/0</span></div>
+          <div class="prog-bar"><div class="prog-fill" id="plan-bar" style="width:0%"></div></div>
+        </div>
+        <div id="plan-summary" style="font-size:12px;color:var(--mut);margin-top:6px"></div>
       </div>
-      <div id="plan-summary" style="font-size:12px;color:var(--mut);margin-top:6px"></div>
+      <div style="margin-bottom:8px;display:flex;align-items:center;gap:10px">
+        <button class="toggle-known-btn" onclick="toggleKnown()">👁 既知を<span id="known-toggle-txt">非表示</span></button>
+        <span style="font-size:12px;color:var(--mut)">緑背景＝既知セクション</span>
+      </div>
+      <div id="plan-body"></div>
     </div>
-    <div style="margin-bottom:8px;display:flex;align-items:center;gap:10px">
-      <span class="toggle-known" onclick="toggleKnown()">👁 既知を<span id="known-toggle-txt">非表示</span></span>
-      <span style="font-size:12px;color:var(--mut)">緑背景＝既知セクション</span>
-    </div>
-    <div id="plan-body"></div>
   </div>
 
   <!-- ── TAB: 試験 ── -->
@@ -289,6 +422,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;bac
         </div>
         <div style="font-size:13px;margin-bottom:14px;line-height:1.9">📘 第1章（AI基礎）：4問<br>📗 第2章（生成AI）：4問<br>📙 第3章（最新動向）：3問<br>📕 第4章（法律・倫理）：6問<br>📓 第5章（プロンプト）：3問</div>
         <button class="btn-primary" onclick="startQuiz()">試験を開始する</button>
+      </div>
+    </div>
+    <div id="quiz-last-score" style="display:none">
+      <div class="card">
+        <div class="card-title">📊 前回のスコア</div>
+        <div id="quiz-last-score-body"></div>
       </div>
     </div>
     <div id="quiz-run" style="display:none">
@@ -326,13 +465,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;bac
       <div class="card-title">🔍 課題分析</div>
       <div id="issue-list"></div>
     </div>
-    <div class="card">
+    <div class="card" id="trend-card">
       <div class="card-title">📊 章別スコア推移</div>
-      <div id="trend-area"><div class="empty">模擬試験を受けると推移が表示されます</div></div>
+      <div id="trend-area"><div class="empty-state"><div class="empty-icon">📊</div><p class="empty-title">スコアデータがありません</p><p class="empty-desc">模擬試験を受けると<br>章別の推移が表示されます</p><button class="btn-ghost" onclick="showTab('quiz',document.querySelectorAll('.app-tab')[1])">✏️ 試験を受ける</button></div></div>
     </div>
     <div class="card">
       <div class="card-title">📋 受験履歴 <span style="font-size:12px;font-weight:400;color:var(--mut);margin-left:auto" id="hist-count"></span></div>
-      <div id="hist-list"><div class="empty">まだ受験記録がありません。</div></div>
+      <div id="hist-list"><div class="empty-state"><div class="empty-icon">📝</div><p class="empty-title">まだ受験記録がありません</p><p class="empty-desc">試験タブから模擬試験を受けると<br>ここに履歴が表示されます</p></div></div>
       <button id="clr-btn" style="display:none;width:100%;margin-top:10px;padding:9px;background:#fee2e2;color:var(--ng);border:1px solid #fca5a5;border-radius:8px;font-size:13px;cursor:pointer" onclick="clearHist()">履歴をリセット</button>
     </div>
   </div>
@@ -360,18 +499,33 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;bac
       <button class="btn-primary" style="margin-top:12px" onclick="saveProfile()">保存</button>
     </div>
     <div class="card">
-      <div class="card-title">✅ 既知セクション設定</div>
-      <p style="font-size:12px;color:var(--mut);margin-bottom:10px">すでに理解しているセクションをチェック。プランで非強調表示になります。</p>
-      <div id="cfg-known-grid"></div>
-      <button class="btn-primary" style="margin-top:12px" onclick="saveKnown()">既知設定を保存</button>
-    </div>
-    <div class="card">
       <div class="card-title">🔐 アカウント</div>
       <div id="cfg-email" style="font-size:13px;color:var(--mut);margin-bottom:12px"></div>
+      <div style="margin-bottom:12px">
+        <button class="btn-sm" style="background:var(--bg);border:1.5px solid var(--bdr);color:var(--txt);width:100%;text-align:left;display:flex;justify-content:space-between;align-items:center" onclick="togglePwForm()">
+          <span>🔑 パスワード変更</span><span id="pw-chevron">▶</span>
+        </button>
+        <div id="cfg-pw-form" style="display:none;margin-top:10px">
+          <input id="cfg-pw-new" type="password" placeholder="新しいパスワード（6文字以上）"
+            style="width:100%;padding:9px 12px;border:1.5px solid var(--bdr);border-radius:8px;font-size:14px;margin-bottom:6px">
+          <input id="cfg-pw-confirm" type="password" placeholder="確認用パスワード"
+            style="width:100%;padding:9px 12px;border:1.5px solid var(--bdr);border-radius:8px;font-size:14px;margin-bottom:8px">
+          <button class="btn-sm" style="background:var(--p);color:#fff" onclick="changePassword()">変更を保存</button>
+          <div id="cfg-pw-msg" style="font-size:12px;margin-top:6px;min-height:16px"></div>
+        </div>
+      </div>
       <button class="btn-sm btn-danger" onclick="doLogout()">ログアウト</button>
     </div>
   </div>
 
+  <!-- ── Quota completion banner ── -->
+  <div id="quota-overlay" class="quota-overlay"></div>
+  <div id="quota-banner" class="quota-banner">
+    <div class="quota-banner-title" id="quota-banner-title">今日完了！🎉</div>
+    <div class="quota-banner-sub" id="quota-banner-sub">また明日 💪</div>
+  </div>
+  <!-- ── Defer toast ── -->
+  <div id="defer-toast"></div>
 </div><!-- /s-app -->
 
 <script>
@@ -418,6 +572,29 @@ const ADVICE = {
   '第3章':'RAGのチャンク・ベクトルDB、MCPの定義。ディープフェイク検出の限界も押さえる',
   '第4章':'AI新法の正式名称と基本構造、著作権法とAI生成物の関係、3主体を優先学習',
   '第5章':'Temperature/Top-pの効果・使い分け、Zero-Shot vs Few-Shotの違いを整理',
+};
+
+const TASK_NOTES = {
+  t1:['第1次ブーム(1950s): 探索・推論。ダートマス会議(1956)でAIという言葉が生まれた','第2次ブーム(1980s): エキスパートシステム。専門家の知識をルール化','第3次ブーム(2010s〜): ディープラーニング×ビッグデータで爆発的進化','弱いAI=特定タスク専用（現在のAIはすべてここ）/ 強いAI=汎用知能（未実現）','シンギュラリティ: ヴィンジ提唱・カーツワイル普及。2045年問題とも呼ばれる'],
+  t2:['Transformer(2017 Google): Self-Attentionで全単語間の関係を並列計算。RNNの逐次処理を克服','GPT系譜: GPT-1(2018)→GPT-2(2019)→GPT-3(2020)→GPT-4(2023)→GPT-5(2025)','o1/o3/o4: 推論特化モデル。o2は存在しない（Googleとの商標競合で欠番）','BERT(2018 Google): 双方向Transformer。穴埋め問題で文章理解に強み','ChatGPT公開: 2022年11月。史上最速で100万ユーザーを突破'],
+  t3:['VAE(変分自己符号化器): エンコーダで潜在ベクトルに圧縮→デコーダで新データを生成','GAN(敵対的生成ネット): 生成器vs識別器が競い合い高品質な偽物を生成','RNN(再帰型NN): 時系列データを逐次処理。長い依存関係の学習が困難','LSTM: RNNを改良。ゲート機構で長期記憶を保持できる','違い: VAE/GANは生成モデル / RNN/LSTMは系列処理モデル'],
+  t4:['RLHF: 人間の評価を報酬として強化学習でモデルを調整。InstructGPT・ChatGPTに採用','ハルシネーション: もっともらしいが事実と異なる情報を確信を持って出力する現象','アライメント: AIを人間の意図・価値観に沿わせること。RLHFはその代表的手法','ファインチューニング: 事前学習済みモデルを特定タスク用データで追加学習すること','重要な区別: プロンプトエンジニアリングはモデル変更なし / FTはモデルのパラメータを変更'],
+  t5:['教師あり学習: 正解ラベルあり。分類・回帰に使用。例: スパム判定・価格予測','教師なし学習: ラベルなし。クラスタリング・次元削減。例: 顧客セグメント分析','強化学習: 環境からの報酬を最大化するよう行動を学習。例: ゲームAI・自動運転','半教師あり学習: 少量のラベルあり+大量のラベルなしデータを組み合わせる手法','転移学習: 別タスクで学習した知識を新タスクに流用。ファインチューニングの基盤'],
+  t6:['著作権: 創作的表現を保護。AI自律生成物は原則保護対象外（人間の創作的関与が必要）','特許権: 技術的発明を20年保護。出願・審査が必要','商標権: 商品・サービスの識別マークを保護。更新で永続可能','意匠権: 物品・画像のデザインを25年保護','肖像権: 明文規定なし（判例法上の権利）。AI生成の顔写真にも適用問題あり'],
+  t7:['正式名称:「人工知能関連技術の研究開発及び活用の推進に関する法律」(2025年6月4日公布)','性格: 規制法ではなく推進法。EU AI法（包括的規制）とは対照的','AI事業者GL第1.1版(2025年3月改定): 法的義務なし（努力目標）でGLと連携','3主体: AI開発者（基盤モデル開発）/ AI提供者（サービス構築・提供）/ AI利用者（業務利用）','同一企業が複数主体を兼ねることあり。例: OpenAI=開発者兼提供者'],
+  t8:['3理念: Dignity（人間の尊厳）/ Diversity&Inclusion（多様性と包摂）/ Sustainability（持続可能性）','共通指針10項目の例: 人間中心・安全性・公平性・プライバシー保護・透明性・セキュリティ確保など','G7広島AIプロセス(2023): 国際的なAI規範の枠組み。日本が議長国として主導','OECD AI原則(2019): 人間中心・透明性・堅牢性・説明責任など5原則が基盤','試験頻出: 3理念の英語表記と意味のセット。順番も確認しておくこと'],
+  t9:['AI開発者: 基盤モデル・学習アルゴリズムを開発する事業者（例: OpenAI・Anthropic）','AI提供者: 開発者の技術を使いサービスを構築・提供する事業者（例: ChatGPT企業向け利用）','AI利用者: 提供されたAIサービスを業務利用する事業者・個人','同一企業が複数の主体を兼ねることがある点が試験ポイント','各主体ごとに異なるリスクと責任が定義されている。開発者責任が最も重い'],
+  t10:['要配慮個人情報: 差別・偏見の原因となりうる情報。病歴・人種・犯罪歴・障害など。取得に本人同意必要','匿名加工情報: 特定個人を識別できないよう加工。本人同意なしで第三者提供可','仮名加工情報(2022年追加): 他情報との照合なしでは識別不可。社内活用向き。第三者提供は原則不可','2022年個人情報保護法改正: 漏洩時の報告義務化・外国提供規制強化・オプトアウト制限強化','AI文脈での注意: 学習データに個人情報を含める場合の同意・利用目的の範囲'],
+  t11:['ディープフェイク: DNNで本物そっくりの偽映像・音声・画像を生成する技術','ディスインフォメーション: 意図的に拡散される偽情報（ミスインフォメーション=意図なしと区別）','検出の限界: 完璧な検出技術は存在しない。フォレンジック解析で痕跡を探す','法的対応: 日本では名誉毀損・不正競争防止法・肖像権侵害等で対応（専用法なし）','頻出事例: 政治家なりすまし映像・CEOの声を模倣した金融詐欺'],
+  t12:['RAG(検索拡張生成): LLMのカットオフ以降の情報を外部DBから検索してGenerationに活用','チャンク: 長文をLLMが処理しやすいサイズ（数百トークン）に分割した断片','ベクトルDB: テキストを数値ベクトルに変換して格納。コサイン類似度で高速検索','RAG vs ファインチューニング: RAGはモデル変更なし・最新情報対応 / FTはモデル変更・静的','エンベディング: テキストの意味を多次元ベクトルで表現する技術。RAGの核心'],
+  t13:['AIエージェント: LLMが自律的に計画・ツール利用・実行を繰り返す仕組み','MCP(Model Context Protocol): AnthropicがオープンソースでAIと外部ツールを繋ぐ標準規格(2024)','GenSpark・Manus・Skywork AI: 2025年登場の代表的な自律型AIエージェント','マルチエージェント: 複数AIエージェントが役割分担して協調するアーキテクチャ','ツール利用の例: Web検索・コード実行・ファイル操作・API呼び出しを自律判断'],
+  t14:['スミッシング: SMS(ショートメッセージ)を使ったフィッシング詐欺。Smishing=SMS+Phishing','ヴィッシング: 音声通話(Voice)を使った詐欺。CEOなりすまし・振り込め詐欺が代表','スピアフィッシング: 特定個人・組織を事前調査した上で狙う標的型フィッシング','ランサムウェア: データを暗号化し復号と引き換えに身代金(Ransom)を要求するマルウェア','試験ポイント: 4種の違いを混同しないこと。語源から覚えると確実'],
+  t15:['Temperature: 出力のランダム性。高い(1.0近く)=多様・創造的 / 低い(0.1近く)=確定的・一貫','Top-p(核サンプリング): 確率の累積がpを超えるトークン集合からサンプリング','Top-k: 確率上位k個のトークンからランダムサンプリング','プレトレーニング: 大量テキストで次トークンを予測する事前学習フェーズ。膨大な計算コスト','使い分け例: 創作文章=Temperature高め / 要約・翻訳・コード=低め'],
+  t16:['本番試験: 60問/60分。4択選択式。合格目安は正答率70%(42問)以上','模擬試験(20問)で60%未満の章を要注意。第4章（法律・倫理）は出題数最多(6問)','時間配分: 1問1分ペース。見直し10分を確保する習慣をつける','ケアレスミス対策: 「最も適切なもの」「誤っているもの」の読み間違いに注意','受験後は履歴タブで章別スコアを確認し、次回の弱点学習に活かす'],
+  t17:['履歴タブで直近3回の章別平均スコアを確認する','判定基準: 60%未満=要重点復習(赤) / 60-80%=もう一歩(黄) / 80%以上=安定(緑)','弱点章の対応: 対応タスクの📖学習メモを読み直し→模擬試験で確認','第4章（法律・倫理）は出題数最多なので70%以上を必ず達成する','残り日数別戦略: 1週間前=弱点集中 / 2日前=全章最終確認 / 前日=メモ見直し'],
+  t18:['本番は60問/60分。1問1分ペースの体感を掴むことが目的','模擬20問を20分以内で解く練習をする。時計を見ながら実施','見直し時間3分を確保する習慣。最後まで回答を見直す','2回目の試験で1回目より下がった章=本当の弱点。そこを集中復習','連続2回受験するとスコアの変化が見え、残り学習優先度が明確になる'],
+  t19:['GPT-4o(2024): テキスト+画像+音声のマルチモーダル対応。リアルタイム音声対話','GPT-5(2025): OpenAI最新世代。複雑な推論・長文処理が大幅向上','o3/o4: 推論特化。数学・コーディング・科学的推論が得意','Claude 3.5/3.7(Anthropic): 長文処理・コード生成。Constitutional AIによる安全性','Gemini 2.0(Google): Googleサービス統合。マルチモーダル・長いコンテキスト窓'],
+  t20:['法律系最終確認: AI新法正式名称・公布日(2025/6/4) / GL3主体 / 著作権とAI生成物','技術系最終確認: ハルシネーション・RLHF・RAG・ディープフェイクの定義','人名・年号: ダートマス会議(1956) / シンギュラリティ提唱者(ヴィンジ) / OECD原則(2019)','数字の確認: 本番60問60分 / 合格目安70% / 試験当日の持ち物・時間確認','自分を信じろ。毎日続けたストリークがそのまま合格への道だ'],
 };
 
 const QUESTIONS = [
@@ -550,6 +727,29 @@ async function doLogout() {
   showScreen('s-auth');
 }
 
+function togglePwForm() {
+  const form = document.getElementById('cfg-pw-form');
+  const chevron = document.getElementById('pw-chevron');
+  const open = form.style.display === 'none';
+  form.style.display = open ? 'block' : 'none';
+  chevron.textContent = open ? '▼' : '▶';
+}
+
+async function changePassword() {
+  const pw  = document.getElementById('cfg-pw-new').value;
+  const pw2 = document.getElementById('cfg-pw-confirm').value;
+  const msg = document.getElementById('cfg-pw-msg');
+  msg.style.color = 'var(--ng)';
+  if (pw.length < 6) { msg.textContent = 'パスワードは6文字以上にしてください'; return; }
+  if (pw !== pw2)    { msg.textContent = 'パスワードが一致しません'; return; }
+  const { error } = await client.auth.updateUser({ password: pw });
+  if (error) { msg.textContent = '変更失敗: ' + error.message; return; }
+  msg.style.color = 'var(--ok)';
+  msg.textContent = '✅ パスワードを変更しました';
+  document.getElementById('cfg-pw-new').value = '';
+  document.getElementById('cfg-pw-confirm').value = '';
+}
+
 function guestMode() {
   isGuest = true;
   const raw = localStorage.getItem(LS_PROFILE);
@@ -558,6 +758,7 @@ function guestMode() {
   loadPlanChecked();
   showScreen('s-app');
   renderHeader();
+  renderTodayView();
   renderPlan();
 }
 
@@ -605,13 +806,6 @@ function renderCfgTab() {
   document.getElementById('cfg-level').value = profile.level;
   document.getElementById('cfg-date').value  = profile.target_date;
   document.getElementById('cfg-email').textContent = isGuest ? 'ゲストモード' : (session?.user?.email || '');
-  const grid = document.getElementById('cfg-known-grid');
-  grid.innerHTML = '';
-  const knownSet = new Set(profile.known_tasks);
-  TASKS.forEach(t => {
-    const checked = knownSet.has(t.id);
-    grid.innerHTML += `<div class="task-row"><input type="checkbox" class="task-check" value="${t.id}" ${checked?'checked':''}><div><div class="task-lbl">${t.lbl}</div><div class="task-meta">${t.ch} · ${t.min}分</div></div></div>`;
-  });
 }
 
 // ─────────────────────────────────────────────
@@ -655,6 +849,7 @@ async function ob2Finish() {
   loadPlanChecked();
   showScreen('s-app');
   renderHeader();
+  renderTodayView();
   renderPlan();
 }
 
@@ -667,8 +862,308 @@ function ob2Done()  { ob2Finish(); }
 function renderHeader() {
   const targetDate = profile.target_date ? new Date(profile.target_date) : new Date('2026-06-20');
   const days = Math.ceil((targetDate - new Date()) / 864e5);
-  document.getElementById('remain').textContent = days > 0 ? `約${days}日` : '試験日！';
-  document.getElementById('hdr-name').textContent = profile.display_name || (isGuest ? 'ゲスト' : 'ユーザー');
+  const countEl = document.getElementById('remain-count');
+  const unitEl  = document.getElementById('remain-unit');
+  if (countEl) {
+    if (days <= 0) {
+      countEl.textContent = '試験日！';
+      countEl.className = 'remain-count today';
+      if (unitEl) unitEl.textContent = '頑張って！';
+    } else if (days <= 7) {
+      countEl.textContent = days + '日';
+      countEl.className = 'remain-count urgent';
+      if (unitEl) unitEl.textContent = '試験まで（ラストスパート！）';
+    } else if (days <= 14) {
+      countEl.textContent = days + '日';
+      countEl.className = 'remain-count warn';
+      if (unitEl) unitEl.textContent = '試験まで（もうすぐ！）';
+    } else {
+      countEl.textContent = days + '日';
+      countEl.className = 'remain-count ok';
+      if (unitEl) unitEl.textContent = '試験まで';
+    }
+  }
+  // 名前表示：空の場合はゲスト/メールプレフィックスにフォールバック
+  const nameEl = document.getElementById('hdr-name');
+  if (nameEl) {
+    const displayName = profile.display_name
+      || (isGuest ? 'ゲスト' : (session?.user?.email?.split('@')[0] || 'ゲスト'));
+    nameEl.textContent = displayName + ' さん';
+  }
+  // ヘッダーの進捗バーは renderTodayView() が更新するためここでは呼ばない
+}
+
+// ─────────────────────────────────────────────
+// ADHD TODAY VIEW — helpers
+// ─────────────────────────────────────────────
+function taskNoteHTML(id) {
+  const notes = TASK_NOTES[id];
+  if (!notes) return '';
+  return `<div class="task-notes" id="notes-${id}"><ul>${notes.map(n=>`<li>${n}</li>`).join('')}</ul></div>`;
+}
+function notesBtnHTML(id) {
+  return TASK_NOTES[id] ? `<button class="notes-toggle" onclick="toggleNotes('${id}')" title="学習メモを見る">📖</button>` : '';
+}
+function toggleNotes(id) {
+  const el = document.getElementById('notes-' + id);
+  const btn = el && el.previousElementSibling && el.previousElementSibling.classList.contains('notes-toggle')
+    ? el.previousElementSibling : null;
+  if (!el) return;
+  const open = el.classList.toggle('open');
+  // ボタンのスタイルも切り替え
+  document.querySelectorAll(`.notes-toggle`).forEach(b => {
+    if (b.getAttribute('onclick') === `toggleNotes('${id}')`) b.classList.toggle('open', open);
+  });
+}
+const LS_STREAK     = 'guga_streak';
+const LS_TODAY_TASKS = 'guga_today_tasks';
+const LS_DEFER      = 'guga_defer';
+
+function todayKey() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function getStreak() {
+  try { return JSON.parse(localStorage.getItem(LS_STREAK)) || {count:0,lastDate:'',longestStreak:0}; } catch(e) { return {count:0,lastDate:'',longestStreak:0}; }
+}
+function saveStreak(s) { localStorage.setItem(LS_STREAK, JSON.stringify(s)); }
+
+function updateStreakForToday() {
+  const today = todayKey();
+  const s = getStreak();
+  if (s.lastDate === today) return s;
+  const d = new Date(); d.setDate(d.getDate()-1);
+  const yesterday = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  s.count = (s.lastDate === yesterday) ? s.count + 1 : 1;
+  s.lastDate = today;
+  s.longestStreak = Math.max(s.longestStreak || 0, s.count);
+  saveStreak(s);
+  return s;
+}
+
+function getDeferredToday() {
+  try { return new Set(JSON.parse(localStorage.getItem(LS_DEFER + '_' + todayKey())) || []); } catch(e) { return new Set(); }
+}
+function saveDeferredToday(set) {
+  localStorage.setItem(LS_DEFER + '_' + todayKey(), JSON.stringify(Array.from(set)));
+}
+
+function getTodayTasks() {
+  const today = todayKey();
+  const knownSet = new Set(profile.known_tasks);
+  // キャッシュ確認（当日固定）
+  try {
+    const cached = JSON.parse(localStorage.getItem(LS_TODAY_TASKS));
+    if (cached && cached.date === today && cached.ids && cached.ids.length > 0) {
+      const valid = TASKS.filter(t => cached.ids.includes(t.id) && !knownSet.has(t.id));
+      if (valid.length > 0) return valid;
+    }
+  } catch(e) {}
+
+  const deferred = getDeferredToday();
+  const incomplete = TASKS.filter(t => !planChecked.has(t.id) && !knownSet.has(t.id) && !deferred.has(t.id));
+  if (incomplete.length === 0) return [];
+
+  const targetDate = profile.target_date ? new Date(profile.target_date) : new Date('2026-06-20');
+  const remainDays = Math.max(1, Math.ceil((targetDate - new Date()) / 864e5));
+  let count = Math.min(3, Math.max(1, Math.ceil(incomplete.length / remainDays)));
+
+  const hi = incomplete.filter(t => t.hi);
+  const normal = incomplete.filter(t => !t.hi);
+  const d = new Date();
+  const seed = d.getFullYear() * 10000 + (d.getMonth()+1) * 100 + d.getDate();
+
+  let selected = [];
+  if (hi.length > 0) {
+    const off = seed % hi.length;
+    for (let i = 0; i < hi.length && selected.length < count; i++) selected.push(hi[(off+i) % hi.length]);
+  }
+  if (selected.length < count && normal.length > 0) {
+    const off = seed % normal.length;
+    for (let i = 0; i < normal.length && selected.length < count; i++) selected.push(normal[(off+i) % normal.length]);
+  }
+  selected = selected.slice(0, count);
+  localStorage.setItem(LS_TODAY_TASKS, JSON.stringify({date: today, ids: selected.map(t => t.id)}));
+  return selected;
+}
+
+function getTomorrowTask() {
+  const knownSet = new Set(profile.known_tasks);
+  const incomplete = TASKS.filter(t => !planChecked.has(t.id) && !knownSet.has(t.id));
+  if (incomplete.length === 0) return null;
+  const d = new Date(); d.setDate(d.getDate()+1);
+  return incomplete[(d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate()) % incomplete.length];
+}
+
+function deferTask(id) {
+  // キャッシュから除去
+  try {
+    const today = todayKey();
+    const cached = JSON.parse(localStorage.getItem(LS_TODAY_TASKS));
+    if (cached && cached.date === today) {
+      cached.ids = cached.ids.filter(i => i !== id);
+      localStorage.setItem(LS_TODAY_TASKS, JSON.stringify(cached));
+    }
+  } catch(e) {}
+  const def = getDeferredToday(); def.add(id); saveDeferredToday(def);
+  renderTodayView();
+  showDeferToast('📅 明日に移動しました');
+}
+
+function showQuotaBanner() {
+  const ov = document.getElementById('quota-overlay');
+  const bn = document.getElementById('quota-banner');
+  if (!ov || !bn) return;
+  ov.classList.remove('show'); bn.classList.remove('show');
+  void ov.offsetWidth;
+  ov.classList.add('show'); bn.classList.add('show');
+  setTimeout(() => { ov.classList.remove('show'); bn.classList.remove('show'); }, 2600);
+}
+
+function showDeferToast(msg) {
+  const el = document.getElementById('defer-toast');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.animation = 'none';
+  void el.offsetWidth;
+  el.style.animation = 'toast-in .22s ease-out forwards, toast-out .20s ease-in 1.5s forwards';
+}
+
+function togglePlanAllView(el) {
+  const allView = document.getElementById('plan-all-view');
+  if (!allView) return;
+  const open = allView.style.display !== 'none';
+  allView.style.display = open ? 'none' : 'block';
+  el.textContent = open ? '全タスクを見る ▼' : '全タスクを閉じる ▲';
+  if (!open) renderPlan();
+}
+
+function renderTodayView() {
+  const container = document.getElementById('today-view-container');
+  if (!container) return;
+
+  const todayTasks = getTodayTasks();
+  const todayTotal = todayTasks.length;
+  const todayDone  = todayTasks.filter(t => planChecked.has(t.id)).length;
+  const allDone    = todayTotal > 0 && todayDone >= todayTotal;
+  const remainMins = todayTasks.filter(t => !planChecked.has(t.id)).reduce((s,t) => s+t.min, 0);
+
+  const streak = getStreak();
+  const sc = streak.count || 0;
+  const ls = streak.longestStreak || 0;
+  const streakColor = sc >= 14 ? '#eab308' : sc >= 7 ? '#ef4444' : '#f97316';
+  const streakLabel = sc === 0 ? '今日から始めよう！' : sc >= 7 ? '絶好調！' : '続けてます！';
+
+  const circ = 251;
+  const pct  = todayTotal > 0 ? todayDone / todayTotal : 0;
+  const offset = circ * (1 - pct);
+  const ringColor = allDone ? 'var(--ok)' : (pct > 0 ? 'var(--warn)' : 'var(--p)');
+
+  const knownSet = new Set(profile.known_tasks);
+  const globalDone  = TASKS.filter(t => planChecked.has(t.id) || knownSet.has(t.id)).length;
+  const globalTotal = TASKS.length;
+  const remaining   = TASKS.filter(t => !planChecked.has(t.id) && !knownSet.has(t.id)).length;
+
+  const streakHTML = `
+    <div class="streak-wrap">
+      <span class="streak-icon" id="streak-icon">🔥</span>
+      <div>
+        <span class="streak-count" id="streak-count-num" style="color:${streakColor}">${sc}</span>
+        <span style="font-size:13px;font-weight:700;color:var(--txt)"> 日連続</span>
+        <div class="streak-label">${streakLabel}</div>
+      </div>
+      <div class="streak-best">最長 ${ls}日</div>
+    </div>`;
+
+  const ringHTML = `
+    <div class="today-ring-wrap">
+      <svg width="96" height="96">
+        <circle cx="48" cy="48" r="40" fill="none" stroke="var(--bdr)" stroke-width="9"/>
+        <circle id="today-ring-arc" cx="48" cy="48" r="40" fill="none" stroke="${ringColor}" stroke-width="9"
+          stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${offset}"
+          transform="rotate(-90 48 48)"
+          style="transition:stroke-dashoffset .6s cubic-bezier(.25,.46,.45,.94),stroke .4s ease-out${allDone?';filter:drop-shadow(0 0 3px #059669)':''}"/>
+      </svg>
+      <div class="today-ring-inner">
+        <div class="today-ring-num">${todayDone}</div>
+        <div class="today-ring-den">/ ${todayTotal || '-'}</div>
+      </div>
+    </div>`;
+
+  const hintMsg = remainMins <= 15 ? 'コーヒー1杯分で終わります'
+    : remainMins <= 30 ? `約${remainMins}分で今日分が終わります`
+    : remainMins <= 60 ? '1時間で今日分が終わります'
+    : `約${Math.round(remainMins/60*10)/10}時間で今日分が終わります`;
+
+  const globalHint = `<div class="today-global-hint">全体進捗: ${globalDone}/${globalTotal} 完了 ／ 残り${remaining}タスク</div>`;
+  const viewAllLink = `<div class="today-view-all-link" onclick="togglePlanAllView(this)">全タスクを見る ▼</div>`;
+
+  if (todayTotal === 0) {
+    // 全タスク完了
+    container.innerHTML = streakHTML + `
+      <div class="today-view done">
+        ${ringHTML}
+        <div class="today-done-heading">🎓 全課題完了！</div>
+        <div class="today-done-sub">全${globalTotal}タスクを学習しました。自信を持って試験へ！</div>
+        <button class="btn-primary" onclick="showTab('quiz',document.querySelectorAll('.app-tab')[1])">✏️ 最終確認テスト →</button>
+      </div>` + globalHint + viewAllLink;
+  } else if (allDone) {
+    // 今日完了
+    const tomorrow = getTomorrowTask();
+    const tomorrowHTML = tomorrow ? `
+      <div class="tomorrow-preview">
+        <div class="tomorrow-preview-label">明日のプレビュー</div>
+        ${tomorrow.ch}: ${tomorrow.lbl.slice(0,30)}${tomorrow.lbl.length > 30 ? '…' : ''}
+      </div>` : '';
+    container.innerHTML = streakHTML + `
+      <div class="today-view done">
+        ${ringHTML}
+        <div class="today-done-heading">今日完了！</div>
+        <div class="today-done-sub">${new Date().toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'})} の学習が終わりました</div>
+        <div class="today-done-tasks">
+          ${todayTasks.map(t => `<div class="task-row done-row" id="today-task-${t.id}">
+            <input type="checkbox" class="task-check" checked onchange="toggleTask('${t.id}',this)">
+            <div style="flex:1;min-width:0">
+              <div class="task-lbl done">${t.lbl}</div>
+              <div class="task-meta">${t.ch} · ${t.min}分</div>
+              ${taskNoteHTML(t.id)}
+            </div>
+            ${notesBtnHTML(t.id)}
+          </div>`).join('')}
+        </div>
+        ${tomorrowHTML}
+        <button class="btn-primary" onclick="showTab('quiz',document.querySelectorAll('.app-tab')[1])">✏️ 試験で腕試し →</button>
+      </div>` + globalHint + viewAllLink;
+  } else {
+    // 進行中 or 未着手
+    const taskRows = todayTasks.map(t => {
+      const done = planChecked.has(t.id);
+      return `<div class="task-row${done?' done-row':''}" id="today-task-${t.id}">
+        <input type="checkbox" class="task-check" ${done?'checked':''} onchange="toggleTask('${t.id}',this)">
+        <div style="flex:1;min-width:0">
+          <div class="task-lbl${done?' done':''}">${t.lbl}</div>
+          <div class="task-meta">${t.ch} · ${t.min}分</div>
+          ${taskNoteHTML(t.id)}
+        </div>
+        ${notesBtnHTML(t.id)}
+        ${!done ? `<button class="defer-btn" onclick="deferTask('${t.id}')" title="今日から外す">後で</button>` : ''}
+      </div>`;
+    }).join('');
+    container.innerHTML = streakHTML + `
+      <div class="today-view">
+        ${ringHTML}
+        <div class="today-tasks-label"><span>今日やること</span><span style="font-size:12px;color:var(--mut)">${todayDone}/${todayTotal} 完了</span></div>
+        ${taskRows}
+        ${remainMins > 0 ? `<div class="today-time-hint">⏱ ${hintMsg}</div>` : ''}
+      </div>` + globalHint + viewAllLink;
+  }
+
+  // ヘッダープログレスバーを今日分で更新
+  const lbl  = document.getElementById('today-progress-lbl');
+  const fill = document.getElementById('today-progress-fill');
+  if (lbl)  lbl.textContent  = `今日 ${todayDone} / ${todayTotal} 完了`;
+  if (fill) fill.style.width = (todayTotal > 0 ? Math.round(pct*100) : 0) + '%';
 }
 
 // ─────────────────────────────────────────────
@@ -710,7 +1205,8 @@ function renderPlan() {
       else remainMins += t.min;
       const knownBadge = isKnown ? '<span class="badge-known">既知</span>' : '';
       const hiBadge    = t.hi    ? '<span class="badge-hi">最重要</span>' : '';
-      rows += `<div class="task-row${isKnown?' known-row':''}">
+      const rowCls = ['task-row', isKnown?'known-row':'', t.hi&&!isDone&&!isKnown?'hi-row':'', isDone?'done-row':''].filter(Boolean).join(' ');
+      rows += `<div class="${rowCls}">
         <input type="checkbox" class="task-check" ${isDone||isKnown?'checked':''} ${isKnown?'disabled':''} onchange="toggleTask('${t.id}',this)">
         <div><div class="task-lbl${isDone?' done':''}">${t.lbl}${knownBadge}${hiBadge}</div><div class="task-meta">${t.ch} · ${t.min}分</div></div>
       </div>`;
@@ -727,9 +1223,56 @@ function renderPlan() {
 }
 
 function toggleTask(id, cb) {
+  const wasChecked = planChecked.has(id);
   if (cb.checked) planChecked.add(id); else planChecked.delete(id);
   savePlanChecked();
-  renderPlan();
+
+  // 今日ビューの行アニメーション（新規完了時）
+  if (cb.checked && !wasChecked) {
+    const row = document.getElementById('today-task-' + id);
+    if (row) { row.style.animation = ''; void row.offsetWidth; row.style.animation = 'row-complete .4s ease-out forwards'; }
+  }
+
+  renderTodayView();
+  renderHeader();
+
+  // クォータ達成チェック
+  if (cb.checked && !wasChecked) {
+    const tt = getTodayTasks();
+    const todayDone = tt.filter(t => planChecked.has(t.id)).length;
+    if (tt.length > 0 && todayDone >= tt.length) {
+      const s = updateStreakForToday();
+      renderTodayView();
+      const icon = document.getElementById('streak-icon');
+      if (icon) { icon.style.animation = ''; void icon.offsetWidth; icon.style.animation = 'flame-celebrate .55s ease-in-out forwards'; }
+      showQuotaBanner();
+    }
+  }
+
+  // 全体ビューが展開中なら更新
+  const allView = document.getElementById('plan-all-view');
+  if (allView && allView.style.display !== 'none') renderPlan();
+}
+
+// ─────────────────────────────────────────────
+// QUIZ LAST SCORE
+// ─────────────────────────────────────────────
+function renderQuizLastScore() {
+  const hist = getHist();
+  const el = document.getElementById('quiz-last-score');
+  const body = document.getElementById('quiz-last-score-body');
+  if (!el || !body) return;
+  if (hist.length === 0) { el.style.display = 'none'; return; }
+  const r = hist[0];
+  const c = r.pct >= 80 ? 'var(--ok)' : r.pct >= 60 ? 'var(--warn)' : 'var(--ng)';
+  const emoji = r.pct >= 80 ? '🥇' : r.pct >= 60 ? '🥈' : '💪';
+  let bars = '';
+  CHAPTERS.forEach(ch => {
+    const p = r.byChapter[ch]?.pct || 0;
+    bars += `<div class="lscore-row"><div class="lscore-ch" style="color:${CH_COLORS[ch]}">${ch}</div><div class="lscore-bw"><div class="lscore-bf" style="width:${p}%;background:${CH_COLORS[ch]}"></div></div><div class="lscore-val" style="color:${p>=70?'var(--ok)':'var(--ng)'}">${r.byChapter[ch]?.correct||0}/${r.byChapter[ch]?.total||0}</div></div>`;
+  });
+  body.innerHTML = `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><div class="lscore-total" style="color:${c}">${emoji} ${r.total}/20問 (${r.pct}%)</div><div style="font-size:11px;color:var(--mut);margin-left:auto">${r.date}</div></div>${bars}`;
+  el.style.display = 'block';
 }
 
 // ─────────────────────────────────────────────
@@ -820,6 +1363,7 @@ async function showResult() {
 function retryQuiz() {
   document.getElementById('quiz-result').style.display='none';
   document.getElementById('quiz-start').style.display='block';
+  renderQuizLastScore();
 }
 
 // ─────────────────────────────────────────────
@@ -843,10 +1387,22 @@ async function renderHist() {
   document.getElementById('analysis-card').style.display = hist.length > 0 ? 'block' : 'none';
 
   if (hist.length === 0) {
-    document.getElementById('hist-list').innerHTML='<div class="empty">まだ受験記録がありません。</div>';
-    document.getElementById('trend-area').innerHTML='<div class="empty">模擬試験を受けると推移が表示されます</div>';
+    // トレンドカードを非表示にして、受験履歴カードに統合CTAを表示
+    const trendCard = document.getElementById('trend-card');
+    if (trendCard) trendCard.style.display = 'none';
+    document.getElementById('hist-list').innerHTML=`
+      <div class="empty-state">
+        <div class="empty-icon">✏️</div>
+        <p class="empty-title">まだ受験記録がありません</p>
+        <p class="empty-desc">模擬試験を受けると<br>スコア推移・弱点分析が表示されます</p>
+        <button class="btn-primary" style="width:100%;max-width:240px;margin-top:4px"
+          onclick="showTab('quiz',document.querySelectorAll('.app-tab')[1])">試験を開始する →</button>
+      </div>`;
     return;
   }
+  // 受験記録がある場合はトレンドカードを表示
+  const trendCard = document.getElementById('trend-card');
+  if (trendCard) trendCard.style.display = 'block';
 
   // Attempt cards
   const list=document.getElementById('hist-list'); list.innerHTML='';
@@ -910,6 +1466,8 @@ function showTab(name, el) {
   else document.querySelectorAll('.app-tab').forEach(t=>{ if(t.getAttribute('onclick')?.includes("'"+name+"'")) t.classList.add('on'); });
   if(name==='hist') renderHist();
   if(name==='cfg')  renderCfgTab();
+  if(name==='quiz') renderQuizLastScore();
+  if(name==='plan') renderTodayView();
 }
 </script>
 </body>
