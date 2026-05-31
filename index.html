@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>生成AIパスポート 学習ガイド</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" async></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700;900&display=swap" rel="stylesheet">
 <style>
@@ -543,6 +543,15 @@ input[type="date"]::-webkit-calendar-picker-indicator{background:var(--p);border
 </div><!-- /s-app -->
 
 <script>
+// ローディング画面の強制タイムアウト（CDN・Supabase停止でも4秒以内に認証画面へ）
+var __loadingGuard = setTimeout(function() {
+  var loading = document.getElementById('s-loading');
+  if (loading && loading.classList.contains('on')) {
+    document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('on'); });
+    document.getElementById('s-auth').classList.add('on');
+  }
+}, 4000);
+
 // ─────────────────────────────────────────────
 // ★ CONFIG: Supabaseプロジェクトの値に置き換えてください
 // ─────────────────────────────────────────────
@@ -688,14 +697,14 @@ const LS_PROFILE = 'guga_profile';
 // INIT
 // ─────────────────────────────────────────────
 window.addEventListener('load', async () => {
+  clearTimeout(window.__loadingGuard); // 正常起動ならガードタイマーをキャンセル
   const configured = SUPABASE_URL !== 'YOUR_SUPABASE_PROJECT_URL';
   if (configured && window.supabase) {
     try {
       client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      // 5秒タイムアウト — Supabase が応答しない場合にローディングで止まるのを防ぐ
       const { data } = await Promise.race([
         client.auth.getSession(),
-        new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 5000))
+        new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 4000))
       ]);
       session = data.session;
       if (session) {
@@ -709,7 +718,6 @@ window.addEventListener('load', async () => {
         showScreen('s-auth');
       }
     } catch(e) {
-      // Supabase 接続失敗 → 認証画面へ（ゲスト利用を案内）
       client = null;
       showScreen('s-auth');
     }
