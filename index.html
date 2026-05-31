@@ -689,21 +689,31 @@ const LS_PROFILE = 'guga_profile';
 // ─────────────────────────────────────────────
 window.addEventListener('load', async () => {
   const configured = SUPABASE_URL !== 'YOUR_SUPABASE_PROJECT_URL';
-  if (configured) {
-    client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const { data } = await client.auth.getSession();
-    session = data.session;
-    if (session) {
-      await loadProfile();
-      loadPlanChecked();
-      showScreen('s-app');
-      renderHeader();
-      renderPlan();
-    } else {
+  if (configured && window.supabase) {
+    try {
+      client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      // 5秒タイムアウト — Supabase が応答しない場合にローディングで止まるのを防ぐ
+      const { data } = await Promise.race([
+        client.auth.getSession(),
+        new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 5000))
+      ]);
+      session = data.session;
+      if (session) {
+        await loadProfile();
+        loadPlanChecked();
+        showScreen('s-app');
+        renderHeader();
+        renderTodayView();
+        renderPlan();
+      } else {
+        showScreen('s-auth');
+      }
+    } catch(e) {
+      // Supabase 接続失敗 → 認証画面へ（ゲスト利用を案内）
+      client = null;
       showScreen('s-auth');
     }
   } else {
-    // No Supabase config → guest mode automatically
     guestMode();
   }
 });
