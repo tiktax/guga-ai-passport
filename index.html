@@ -308,6 +308,11 @@ input[type="date"]::-webkit-calendar-picker-indicator{background:var(--p);border
 @keyframes toast-out{from{opacity:1;transform:translateX(-50%) translateY(0);}to{opacity:0;transform:translateX(-50%) translateY(-8px);}}
 @media(prefers-reduced-motion:reduce){.quota-banner,.quota-overlay,*{animation-duration:.01s!important;}}
 
+/* ── Task title clamp ── */
+.task-lbl-inner{display:block;}
+.task-lbl-inner.clamped{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.task-lbl-more{color:var(--p);font-size:12px;cursor:pointer;display:inline-block;margin-top:3px;font-weight:600;user-select:none;}
+
 /* ── Task notes ── */
 .task-notes{display:none;margin:8px 0 4px 0;background:#f0f4ff;border-left:3px solid var(--p);border-radius:0 8px 8px 0;padding:10px 12px;}
 .task-notes.open{display:block;}
@@ -967,6 +972,22 @@ function renderHeader() {
 // ─────────────────────────────────────────────
 // ADHD TODAY VIEW — helpers
 // ─────────────────────────────────────────────
+function taskTitleHTML(t) {
+  const CLAMP_AT = 22;
+  if (t.lbl.length <= CLAMP_AT) {
+    return `<span class="task-lbl-inner">${t.lbl}</span>`;
+  }
+  return `<span class="task-lbl-inner clamped" id="tlt-${t.id}">${t.lbl}</span><span class="task-lbl-more" id="tlt-btn-${t.id}" onclick="toggleTaskTitle('${t.id}')">もっと見る ▼</span>`;
+}
+function toggleTaskTitle(id) {
+  const el  = document.getElementById('tlt-' + id);
+  const btn = document.getElementById('tlt-btn-' + id);
+  if (!el || !btn) return;
+  const collapsed = el.classList.contains('clamped');
+  el.classList.toggle('clamped', !collapsed);
+  btn.textContent = collapsed ? '折りたたむ ▲' : 'もっと見る ▼';
+}
+
 function taskNoteHTML(id) {
   const notes = TASK_NOTES[id];
   if (!notes) return '';
@@ -1227,7 +1248,7 @@ function renderTodayView() {
           ${todayTasks.map(t => `<div class="task-row done-row" id="today-task-${t.id}">
             <input type="checkbox" class="task-check" checked onchange="toggleTask('${t.id}',this)">
             <div style="flex:1;min-width:0">
-              <div class="task-lbl done">${t.lbl}</div>
+              <div class="task-lbl done">${taskTitleHTML(t)}</div>
               <div class="task-meta">${t.ch} · ${t.min}分</div>
               ${taskNoteHTML(t.id)}
             </div>
@@ -1244,7 +1265,7 @@ function renderTodayView() {
       return `<div class="task-row${done?' done-row':''}" id="today-task-${t.id}">
         <input type="checkbox" class="task-check" ${done?'checked':''} onchange="toggleTask('${t.id}',this)">
         <div style="flex:1;min-width:0">
-          <div class="task-lbl${done?' done':''}">${t.lbl}</div>
+          <div class="task-lbl${done?' done':''}">${taskTitleHTML(t)}</div>
           <div class="task-meta">${t.ch} · ${t.min}分</div>
           ${taskNoteHTML(t.id)}
         </div>
