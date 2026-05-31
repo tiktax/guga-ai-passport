@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>生成AIパスポート 学習ガイド</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AI試験対策">
+<meta name="theme-color" content="#4f46e5">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.png">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" async></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700;900&display=swap" rel="stylesheet">
@@ -198,6 +204,26 @@ body{font-family:'Noto Sans JP',-apple-system,BlinkMacSystemFont,'Hiragino Sans'
 .btn-ghost{background:transparent;border:1.5px solid var(--p);color:var(--p);font-size:13px;font-weight:600;padding:9px 22px;border-radius:10px;cursor:pointer;}
 
 @media(max-width:360px){.app-tab{font-size:10px;} .q-txt{font-size:14px;}}
+
+/* ── 日本語テキスト行折り修正 ── */
+.task-lbl,.task-notes li,.mini-q-txt,.mini-q-opt,.q-txt,.today-tasks-label{
+  overflow-wrap:anywhere;word-break:normal;line-break:strict;
+}
+
+/* ── iPhone Safe Area 対応 ── */
+.app-header{padding-top:max(14px,env(safe-area-inset-top));}
+.app-tabs{padding-bottom:env(safe-area-inset-bottom);}
+.tab-pane{padding-bottom:max(14px,calc(env(safe-area-inset-bottom) + 8px));}
+#defer-toast{bottom:calc(80px + env(safe-area-inset-bottom));}
+
+/* ── ヘッダーレイアウト安定化 ── */
+.app-header h1{font-size:clamp(13px,4vw,16px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* ── タッチターゲット 最低44px ── */
+.task-check{min-width:22px;min-height:22px;width:22px;height:22px;}
+.app-tab{min-height:44px;padding:6px 2px;}
+.defer-btn{min-height:36px;min-width:44px;padding:6px 10px;}
+.notes-toggle{min-height:36px;min-width:36px;display:flex;align-items:center;justify-content:center;}
 
 /* ── countdown urgency ── */
 .remain-count{font-size:24px;font-weight:900;line-height:1.1;text-align:right;}
