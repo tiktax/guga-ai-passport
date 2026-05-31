@@ -290,6 +290,20 @@ input[type="date"]::-webkit-calendar-picker-indicator{background:var(--p);border
 .notes-toggle{background:none;border:none;cursor:pointer;font-size:14px;padding:2px 5px;border-radius:4px;flex-shrink:0;transition:all .15s;line-height:1;}
 .notes-toggle:hover{background:rgba(79,70,229,.12);}
 .notes-toggle.open{background:rgba(79,70,229,.12);}
+
+/* ── Mini quiz inside notes ── */
+.notes-quiz{margin-top:10px;padding-top:10px;border-top:1px solid var(--bdr);}
+.notes-quiz-label{font-size:11px;font-weight:700;color:var(--p);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em;}
+.mini-q{margin-bottom:12px;}
+.mini-q:last-child{margin-bottom:0;}
+.mini-q-txt{font-size:13px;font-weight:600;line-height:1.5;margin-bottom:7px;color:var(--txt);}
+.mini-q-opts{display:flex;flex-direction:column;gap:5px;}
+.mini-q-opt{background:#fff;border:1.5px solid var(--bdr);border-radius:8px;padding:8px 10px;font-size:12px;text-align:left;cursor:pointer;transition:all .15s;line-height:1.4;font-family:inherit;}
+.mini-q-opt:hover:not(:disabled){border-color:var(--pl);background:#eef2ff;}
+.mini-q-opt.c{border-color:var(--ok);background:#d1fae5;color:#065f46;}
+.mini-q-opt.w{border-color:var(--ng);background:#fee2e2;color:#991b1b;}
+.mini-q-opt:disabled{cursor:not-allowed;}
+.mini-q-exp{background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.7;margin-top:8px;}
 </style>
 </head>
 <body>
@@ -597,6 +611,14 @@ const TASK_NOTES = {
   t20:['法律系最終確認: AI新法正式名称・公布日(2025/6/4) / GL3主体 / 著作権とAI生成物','技術系最終確認: ハルシネーション・RLHF・RAG・ディープフェイクの定義','人名・年号: ダートマス会議(1956) / シンギュラリティ提唱者(ヴィンジ) / OECD原則(2019)','数字の確認: 本番60問60分 / 合格目安70% / 試験当日の持ち物・時間確認','自分を信じろ。毎日続けたストリークがそのまま合格への道だ'],
 };
 
+// タスクID → 関連するQUESTIONSのインデックス配列
+const TASK_QUESTIONS = {
+  t1:[0,2], t2:[4], t3:[7], t4:[5,6], t5:[1,3],
+  t6:[12], t7:[15], t8:[13], t9:[14], t10:[11],
+  t11:[10], t12:[8], t13:[9], t14:[16], t15:[17,18,19],
+  t16:[], t17:[], t18:[], t19:[], t20:[],
+};
+
 const QUESTIONS = [
   {ch:'第1章',t:'第二次AIブームを牽引した技術として最も適切なものはどれか。',o:['ディープラーニングによる画像認識','エキスパートシステムによる知識の形式化','ビッグデータを活用した機械学習','トランスフォーマーによる自然言語処理'],a:1,e:'<strong>エキスパートシステム</strong>は1980年代の第二次AIブームを牽引。専門家の知識をルールとして記述しAIに推論させる手法。第三次ブームがビッグデータ・ディープラーニング。'},
   {ch:'第1章',t:'「過学習（オーバーフィッティング）」を防ぐ手法として適切でないものはどれか。',o:['ドロップアウト','正則化','転移学習の活用','データセットのサイズを極端に小さくする'],a:3,e:'<strong>データセットを極端に小さくする</strong>と逆に過学習が起きやすくなる。ドロップアウトや正則化はニューラルネットワークが訓練データに過剰適合するのを防ぐ代表的な手法。'},
@@ -899,10 +921,41 @@ function renderHeader() {
 function taskNoteHTML(id) {
   const notes = TASK_NOTES[id];
   if (!notes) return '';
-  return `<div class="task-notes" id="notes-${id}"><ul>${notes.map(n=>`<li>${n}</li>`).join('')}</ul></div>`;
+  const qIdxs = TASK_QUESTIONS[id] || [];
+  const quizHTML = qIdxs.length > 0 ? `
+    <div class="notes-quiz">
+      <div class="notes-quiz-label">📝 関連問題</div>
+      ${qIdxs.map((qi, num) => {
+        const q = QUESTIONS[qi];
+        const opts = q.o.map((opt, oi) =>
+          `<button class="mini-q-opt" onclick="answerMiniQ('${id}',${qi},${oi})">${['①','②','③','④'][oi]} ${opt}</button>`
+        ).join('');
+        return `<div class="mini-q" id="mq-${id}-${qi}">
+          <div class="mini-q-txt">Q${num+1}. ${q.t}</div>
+          <div class="mini-q-opts">${opts}</div>
+          <div class="mini-q-exp" id="mq-exp-${id}-${qi}" style="display:none">${q.e}</div>
+        </div>`;
+      }).join('')}
+    </div>` : '';
+  return `<div class="task-notes" id="notes-${id}">
+    <ul>${notes.map(n=>`<li>${n}</li>`).join('')}</ul>
+    ${quizHTML}
+  </div>`;
 }
 function notesBtnHTML(id) {
   return TASK_NOTES[id] ? `<button class="notes-toggle" onclick="toggleNotes('${id}')" title="学習メモを見る">📖</button>` : '';
+}
+function answerMiniQ(taskId, qi, sel) {
+  const q = QUESTIONS[qi];
+  const container = document.getElementById('mq-' + taskId + '-' + qi);
+  if (!container) return;
+  container.querySelectorAll('.mini-q-opt').forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === q.a) btn.classList.add('c');
+    else if (i === sel && sel !== q.a) btn.classList.add('w');
+  });
+  const exp = document.getElementById('mq-exp-' + taskId + '-' + qi);
+  if (exp) { exp.style.display = 'block'; }
 }
 function toggleNotes(id) {
   const el = document.getElementById('notes-' + id);
