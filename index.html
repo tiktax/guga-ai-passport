@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>生成AIパスポート 学習ガイド</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" async></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -117,9 +117,9 @@ body{font-family:'Noto Sans JP',-apple-system,BlinkMacSystemFont,'Hiragino Sans'
 .task-check:checked::after{content:'✓';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:12px;font-weight:900;}
 .task-check:disabled{opacity:.5;cursor:not-allowed;}
 @keyframes check-pop{0%{transform:scale(.7);}60%{transform:scale(1.2);}100%{transform:scale(1);}}
-.task-lbl{font-size:13px;line-height:1.5;}
+.task-lbl{font-size:15px;line-height:1.55;}
 .task-lbl.done{text-decoration:line-through;color:var(--mut);}
-.task-meta{font-size:11px;color:var(--mut);margin-top:2px;}
+.task-meta{font-size:13px;color:var(--mut);margin-top:3px;}
 .badge-known{display:inline-block;background:var(--ok-l);color:#065f46;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:4px;}
 .badge-hi{display:inline-block;background:var(--ng-l);color:var(--ng);border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:4px;}
 .toggle-known{font-size:12px;color:var(--p);cursor:pointer;margin-bottom:8px;display:inline-block;}
@@ -235,9 +235,9 @@ input[type="date"]::-webkit-calendar-picker-indicator{background:var(--p);border
 .today-ring-num{font-size:26px;font-weight:900;line-height:1;color:var(--txt);}
 .today-ring-den{font-size:11px;color:var(--mut);margin-top:2px;}
 .today-tasks-label{font-size:13px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;}
-.today-time-hint{font-size:12px;color:var(--mut);margin-top:8px;text-align:center;}
-.today-global-hint{font-size:12px;color:var(--mut);text-align:center;margin-top:8px;line-height:1.6;}
-.today-view-all-link{display:block;text-align:center;font-size:12px;color:var(--mut);cursor:pointer;margin-top:8px;padding:4px;user-select:none;}
+.today-time-hint{font-size:13px;color:var(--mut);margin-top:10px;text-align:center;}
+.today-global-hint{font-size:13px;color:var(--mut);text-align:center;margin-top:10px;line-height:1.6;}
+.today-view-all-link{display:block;text-align:center;font-size:14px;color:var(--mut);cursor:pointer;margin-top:10px;padding:6px;user-select:none;}
 .today-view-all-link:hover{color:var(--p);}
 .today-done-heading{font-size:20px;font-weight:900;text-align:center;color:var(--ok);margin-bottom:4px;}
 .today-done-sub{font-size:12px;color:var(--mut);text-align:center;margin-bottom:12px;}
@@ -383,7 +383,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{background:var(--p);border
     <div class="header-inner">
       <div class="header-top">
         <div>
-          <h1>🎯 生成AIパスポート 学習ガイド</h1>
+          <h1>🎯 生成AIパスポート</h1>
           <p id="hdr-name" style="font-size:11px;opacity:.8;margin-top:2px;"></p>
         </div>
         <div style="text-align:right;flex-shrink:0;padding-left:12px;">
