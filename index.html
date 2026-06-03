@@ -1134,9 +1134,10 @@ function taskTitleHTML(t) {
   return `<span class="task-lbl-inner">${t.short || t.lbl}</span>`;
 }
 
-function taskNoteHTML(id) {
+function taskNoteHTML(id, sfx='') {
   const notes = TASK_NOTES[id];
   if (!notes) return '';
+  const nid = id + sfx; // 今日ビュー=id, プランビュー=id+'p'
   const qIdxs = TASK_QUESTIONS[id] || [];
   const quizHTML = qIdxs.length > 0 ? `
     <div class="notes-quiz">
@@ -1144,22 +1145,23 @@ function taskNoteHTML(id) {
       ${qIdxs.map((qi, num) => {
         const q = QUESTIONS[qi];
         const opts = q.o.map((opt, oi) =>
-          `<button class="mini-q-opt" onclick="answerMiniQ('${id}',${qi},${oi})">${['①','②','③','④'][oi]} ${opt}</button>`
+          `<button class="mini-q-opt" onclick="answerMiniQ('${nid}',${qi},${oi})">${['①','②','③','④'][oi]} ${opt}</button>`
         ).join('');
-        return `<div class="mini-q" id="mq-${id}-${qi}">
+        return `<div class="mini-q" id="mq-${nid}-${qi}">
           <div class="mini-q-txt">Q${num+1}. ${q.t}</div>
           <div class="mini-q-opts">${opts}</div>
-          <div class="mini-q-exp" id="mq-exp-${id}-${qi}" style="display:none">${q.e}</div>
+          <div class="mini-q-exp" id="mq-exp-${nid}-${qi}" style="display:none">${q.e}</div>
         </div>`;
       }).join('')}
     </div>` : '';
-  return `<div class="task-notes" id="notes-${id}">
+  return `<div class="task-notes" id="notes-${nid}">
     <ul>${notes.map(n=>`<li>${n}</li>`).join('')}</ul>
     ${quizHTML}
   </div>`;
 }
-function notesBtnHTML(id) {
-  return TASK_NOTES[id] ? `<button class="notes-toggle" onclick="toggleNotes('${id}')" title="学習メモを見る">📖</button>` : '';
+function notesBtnHTML(id, sfx='') {
+  const nid = id + sfx;
+  return TASK_NOTES[id] ? `<button class="notes-toggle" onclick="toggleNotes('${nid}')" title="学習メモを見る">📖</button>` : '';
 }
 function answerMiniQ(taskId, qi, sel) {
   const q = QUESTIONS[qi];
@@ -1479,7 +1481,14 @@ function renderPlan() {
       const rowCls = ['task-row', isKnown?'known-row':'', t.hi&&!isDone&&!isKnown?'hi-row':'', isDone?'done-row':''].filter(Boolean).join(' ');
       rows += `<div class="${rowCls}">
         <input type="checkbox" class="task-check" ${isDone||isKnown?'checked':''} ${isKnown?'disabled':''} onchange="toggleTask('${t.id}',this)">
-        <div><div class="task-lbl${isDone?' done':''}">${t.lbl}${knownBadge}${hiBadge}</div><div class="task-meta">${t.ch} · ${t.min}分</div></div>
+        <div style="flex:1;min-width:0">
+          <div class="task-lbl${isDone?' done':''}">${taskTitleHTML(t)}${knownBadge}${hiBadge}</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
+            <span class="task-meta" style="flex:1">${t.ch} · ${t.min}分</span>
+            ${notesBtnHTML(t.id, 'p')}
+          </div>
+          ${taskNoteHTML(t.id, 'p')}
+        </div>
       </div>`;
     });
     if (!rows) return;
