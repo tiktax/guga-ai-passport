@@ -150,7 +150,7 @@ body{font-family:'Noto Sans JP',-apple-system,BlinkMacSystemFont,'Hiragino Sans'
 .q-next.on{display:block;}
 
 /* quiz timer */
-.quiz-timer{font-size:15px;font-weight:800;padding:3px 10px;border-radius:8px;background:rgba(255,255,255,.15);color:#fff;letter-spacing:.03em;}
+.quiz-timer{font-size:15px;font-weight:800;padding:3px 10px;border-radius:8px;background:#eef2ff;color:var(--p);letter-spacing:.03em;}
 .quiz-timer.warn{background:var(--warn);color:#fff;}
 .quiz-timer.danger{background:var(--ng);color:#fff;animation:cdpulse 1s ease-in-out infinite;}
 
@@ -335,6 +335,39 @@ input[type="date"]::-webkit-calendar-picker-indicator{background:var(--p);border
 .mini-q-opt.w{border-color:var(--ng);background:#fee2e2;color:#991b1b;}
 .mini-q-opt:disabled{cursor:not-allowed;}
 .mini-q-exp{background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:12px 14px;font-size:13px;line-height:1.8;margin-top:10px;}
+
+/* ── Bookmark ── */
+.bm-btn{background:none;border:none;cursor:pointer;font-size:22px;line-height:1;padding:2px 6px;color:#cbd5e1;transition:color .15s,transform .15s;}
+.bm-btn.on{color:#f59e0b;}
+.bm-btn:active{transform:scale(1.25);}
+.btn-bm-review{width:100%;margin-top:8px;padding:12px;background:#fffbeb;color:#92400e;border:1.5px solid #fcd34d;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;}
+
+/* ── Question memo ── */
+.q-memo{display:none;margin-top:10px;}
+.q-memo.on{display:block;}
+.q-memo textarea{width:100%;min-height:64px;padding:10px 12px;border:1.5px solid var(--bdr);border-radius:10px;font-size:14px;font-family:inherit;line-height:1.6;resize:vertical;outline:none;}
+.q-memo textarea:focus{border-color:var(--p);}
+.q-memo-label{font-size:12px;font-weight:700;color:var(--mut);margin-bottom:5px;display:flex;align-items:center;gap:4px;}
+.q-memo-saved{font-size:11px;color:var(--ok);opacity:0;transition:opacity .3s;}
+.q-memo-saved.show{opacity:1;}
+
+/* ── Study stats ── */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.stat-cell{background:var(--bg);border-radius:10px;padding:12px;text-align:center;}
+.stat-num{font-size:22px;font-weight:800;line-height:1.2;}
+.stat-lbl{font-size:11px;color:var(--mut);margin-top:2px;}
+
+/* ── Calendar ── */
+.cal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.cal-title{font-size:15px;font-weight:700;}
+.cal-nav{background:var(--bg);border:none;border-radius:8px;width:34px;height:34px;font-size:16px;cursor:pointer;color:var(--txt);}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.cal-wd{text-align:center;font-size:11px;color:var(--mut);font-weight:600;padding:4px 0;}
+.cal-day{position:relative;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:13px;border-radius:8px;color:var(--txt);}
+.cal-day.out{color:#cbd5e1;}
+.cal-day.today{outline:2px solid var(--p);outline-offset:-2px;font-weight:700;}
+.cal-day.active{background:#fee2e2;font-weight:700;}
+.cal-day.active::after{content:'';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:5px;height:5px;border-radius:50%;background:var(--ng);}
 </style>
 </head>
 <body>
@@ -468,6 +501,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{background:var(--p);border
         </div>
         <div style="font-size:13px;margin-bottom:14px;line-height:1.9">📘 第1章（AI基礎）　📗 第2章（生成AI）<br>📙 第3章（最新動向）　📕 第4章（法律・倫理）<br>📓 第5章（プロンプト）</div>
         <button class="btn-primary" onclick="startQuiz()">試験を開始する</button>
+        <button class="btn-bm-review" id="bm-review-btn" style="display:none" onclick="startBookmarkQuiz()">⭐ ブックマーク復習（<span id="bm-count">0</span>問）</button>
       </div>
     </div>
     <div id="quiz-last-score" style="display:none">
@@ -478,11 +512,15 @@ input[type="date"]::-webkit-calendar-picker-indicator{background:var(--p);border
     </div>
     <div id="quiz-run" style="display:none">
       <div class="card">
-        <div class="q-hdr"><span class="q-cnt" id="q-cnt">問1/20</span><span class="quiz-timer" id="quiz-timer">20:00</span><span class="q-ch" id="q-ch">第1章</span></div>
+        <div class="q-hdr"><span class="q-cnt" id="q-cnt">問1/20</span><span class="quiz-timer" id="quiz-timer">20:00</span><button class="bm-btn" id="q-bm" onclick="toggleBookmark()" title="ブックマーク">☆</button><span class="q-ch" id="q-ch">第1章</span></div>
         <div class="q-prog" id="q-prog"></div>
         <div class="q-txt" id="q-txt"></div>
         <div class="q-opts" id="q-opts"></div>
         <div class="q-exp" id="q-exp"></div>
+        <div class="q-memo" id="q-memo">
+          <div class="q-memo-label">📝 この問題のメモ <span class="q-memo-saved" id="q-memo-saved">保存しました</span></div>
+          <textarea id="q-memo-text" placeholder="間違えた理由・覚え方などをメモ" oninput="saveQNote(this.value)"></textarea>
+        </div>
         <button class="q-next" id="q-next" onclick="nextQ()">次の問題へ →</button>
       </div>
     </div>
@@ -507,6 +545,19 @@ input[type="date"]::-webkit-calendar-picker-indicator{background:var(--p);border
 
   <!-- ── TAB: 履歴 ── -->
   <div id="tab-hist" class="tab-pane">
+    <div class="card">
+      <div class="card-title">📈 総合学習記録</div>
+      <div class="stats-grid" id="study-stats"></div>
+    </div>
+    <div class="card">
+      <div class="cal-hdr">
+        <button class="cal-nav" onclick="calMove(-1)">‹</button>
+        <span class="cal-title" id="cal-title"></span>
+        <button class="cal-nav" onclick="calMove(1)">›</button>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div style="font-size:11px;color:var(--mut);margin-top:8px;text-align:center">🔴 学習した日</div>
+    </div>
     <div class="card" id="analysis-card" style="display:none">
       <div class="card-title">🔍 課題分析</div>
       <div id="issue-list"></div>
@@ -1167,6 +1218,7 @@ function answerMiniQ(taskId, qi, sel) {
   const q = QUESTIONS[qi];
   const container = document.getElementById('mq-' + taskId + '-' + qi);
   if (!container) return;
+  logAnswer(sel === q.a);
   container.querySelectorAll('.mini-q-opt').forEach((btn, i) => {
     btn.disabled = true;
     if (i === q.a) btn.classList.add('c');
@@ -1537,6 +1589,133 @@ function toggleTask(id, cb) {
 // ─────────────────────────────────────────────
 // QUIZ LAST SCORE
 // ─────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// BOOKMARK / MEMO / STUDY LOG
+// ─────────────────────────────────────────────
+const LS_BOOKMARKS = 'guga_bookmarks';
+const LS_QNOTES    = 'guga_qnotes';
+const LS_STUDYLOG  = 'guga_study_log';
+
+function getBookmarks() { try{return new Set(JSON.parse(localStorage.getItem(LS_BOOKMARKS))||[]);}catch(e){return new Set();} }
+function saveBookmarks(s) { localStorage.setItem(LS_BOOKMARKS, JSON.stringify(Array.from(s))); }
+function getQNotes() { try{return JSON.parse(localStorage.getItem(LS_QNOTES))||{};}catch(e){return {};} }
+function saveQNotes(n) { localStorage.setItem(LS_QNOTES, JSON.stringify(n)); }
+function getStudyLog() { try{return JSON.parse(localStorage.getItem(LS_STUDYLOG))||{};}catch(e){return {};} }
+
+// 解答1件を日別ログに記録（試験＋プラン内ミニ問題の両方から呼ばれる）
+function logAnswer(isCorrect) {
+  const log = getStudyLog();
+  const k = todayKey();
+  if (!log[k]) log[k] = {a:0, c:0};
+  log[k].a++;
+  if (isCorrect) log[k].c++;
+  localStorage.setItem(LS_STUDYLOG, JSON.stringify(log));
+}
+
+// 現在の問題の QUESTIONS_FULL 内インデックス（ブックマーク・メモの安定キー）
+function currentPoolIdx() {
+  const q = currentQs[qIdx];
+  return QUESTIONS_FULL.indexOf(q);
+}
+
+function toggleBookmark() {
+  const pi = currentPoolIdx();
+  if (pi < 0) return;
+  const bm = getBookmarks();
+  const btn = document.getElementById('q-bm');
+  if (bm.has(pi)) { bm.delete(pi); btn.textContent='☆'; btn.classList.remove('on'); }
+  else { bm.add(pi); btn.textContent='★'; btn.classList.add('on'); }
+  saveBookmarks(bm);
+}
+
+let qNoteSaveTimer = null;
+function saveQNote(text) {
+  const pi = currentPoolIdx();
+  if (pi < 0) return;
+  const notes = getQNotes();
+  if (text.trim()) notes[pi] = text; else delete notes[pi];
+  saveQNotes(notes);
+  // 保存インジケーター（短くフラッシュ）
+  const el = document.getElementById('q-memo-saved');
+  if (el) {
+    el.classList.add('show');
+    clearTimeout(qNoteSaveTimer);
+    qNoteSaveTimer = setTimeout(() => el.classList.remove('show'), 1200);
+  }
+}
+
+function updateBmReviewBtn() {
+  const bm = getBookmarks();
+  const btn = document.getElementById('bm-review-btn');
+  const cnt = document.getElementById('bm-count');
+  if (!btn || !cnt) return;
+  cnt.textContent = bm.size;
+  btn.style.display = bm.size > 0 ? 'block' : 'none';
+}
+
+function startBookmarkQuiz() {
+  const bm = getBookmarks();
+  if (bm.size === 0) return;
+  const pool = Array.from(bm).map(i => QUESTIONS_FULL[i]).filter(Boolean);
+  currentQs = pool.sort(() => Math.random() - 0.5).slice(0, 20);
+  qIdx=0; qAns=[]; qAnswered=false;
+  document.getElementById('quiz-start').style.display='none';
+  document.getElementById('quiz-result').style.display='none';
+  document.getElementById('quiz-run').style.display='block';
+  quizTimeLeft = currentQs.length * 60; // 1問1分
+  updateTimerDisplay();
+  quizTimerInterval = setInterval(() => {
+    quizTimeLeft--;
+    updateTimerDisplay();
+    if (quizTimeLeft <= 0) { clearInterval(quizTimerInterval); showResult(); }
+  }, 1000);
+  renderQ();
+}
+
+// ─────────────────────────────────────────────
+// STUDY STATS & CALENDAR
+// ─────────────────────────────────────────────
+let calOffset = 0; // 表示中の月（今月からの相対）
+
+function renderStudyStats() {
+  const el = document.getElementById('study-stats');
+  if (!el) return;
+  const log = getStudyLog();
+  let a=0, c=0;
+  Object.values(log).forEach(d => { a+=d.a; c+=d.c; });
+  const days = Object.keys(log).length;
+  const rate = a > 0 ? Math.round(c/a*100) : 0;
+  el.innerHTML = `
+    <div class="stat-cell"><div class="stat-num">${a}</div><div class="stat-lbl">総回答数</div></div>
+    <div class="stat-cell"><div class="stat-num" style="color:var(--ok)">${c}</div><div class="stat-lbl">正解数</div></div>
+    <div class="stat-cell"><div class="stat-num" style="color:${rate>=70?'var(--ok)':'var(--warn)'}">${rate}%</div><div class="stat-lbl">正答率</div></div>
+    <div class="stat-cell"><div class="stat-num" style="color:var(--p)">${days}</div><div class="stat-lbl">学習日数</div></div>`;
+}
+
+function calMove(d) { calOffset += d; renderCalendar(); }
+
+function renderCalendar() {
+  const grid = document.getElementById('cal-grid');
+  const title = document.getElementById('cal-title');
+  if (!grid || !title) return;
+  const log = getStudyLog();
+  const now = new Date();
+  const base = new Date(now.getFullYear(), now.getMonth() + calOffset, 1);
+  const y = base.getFullYear(), m = base.getMonth();
+  title.textContent = `${y}年${m+1}月`;
+  const todayStr = todayKey();
+  const firstDow = new Date(y, m, 1).getDay();
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  let html = ['日','月','火','水','木','金','土'].map(w=>`<div class="cal-wd">${w}</div>`).join('');
+  for (let i = 0; i < firstDow; i++) html += '<div class="cal-day out"></div>';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const key = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const cls = ['cal-day', log[key] ? 'active' : '', key === todayStr ? 'today' : ''].filter(Boolean).join(' ');
+    html += `<div class="${cls}" title="${log[key] ? log[key].c+'/'+log[key].a+'問正解' : ''}">${d}</div>`;
+  }
+  grid.innerHTML = html;
+}
+
 function renderQuizLastScore() {
   const hist = getHist();
   const el = document.getElementById('quiz-last-score');
@@ -1593,7 +1772,7 @@ function startQuiz() {
 
 function renderQ() {
   const q = currentQs[qIdx]; qAnswered=false;
-  document.getElementById('q-cnt').textContent=`問${qIdx+1}/20`;
+  document.getElementById('q-cnt').textContent=`問${qIdx+1}/${currentQs.length}`;
   document.getElementById('q-ch').textContent=q.ch;
   document.getElementById('q-txt').textContent=q.t;
   const opts=document.getElementById('q-opts'); opts.innerHTML='';
@@ -1604,6 +1783,16 @@ function renderQ() {
   });
   document.getElementById('q-exp').classList.remove('on');
   document.getElementById('q-next').classList.remove('on');
+  // ブックマーク状態を反映
+  const bmBtn = document.getElementById('q-bm');
+  if (bmBtn) {
+    const isBm = getBookmarks().has(currentPoolIdx());
+    bmBtn.textContent = isBm ? '★' : '☆';
+    bmBtn.classList.toggle('on', isBm);
+  }
+  // メモ欄は解答後に表示
+  const memo = document.getElementById('q-memo');
+  if (memo) memo.classList.remove('on');
   const prog=document.getElementById('q-prog'); prog.innerHTML='';
   currentQs.forEach((_,i)=>{
     const d=document.createElement('div'); d.className='qd'; d.textContent=i+1;
@@ -1616,18 +1805,26 @@ function renderQ() {
 function selectA(idx) {
   if(qAnswered) return; qAnswered=true; qAns.push(idx);
   const q=currentQs[qIdx];
+  logAnswer(idx===q.a);
   document.querySelectorAll('.q-opt').forEach((b,i)=>{ b.disabled=true; if(i===q.a) b.classList.add('c'); else if(i===idx&&idx!==q.a) b.classList.add('w'); });
   const ex=document.getElementById('q-exp');
   ex.innerHTML=(idx===q.a?'✅ <strong>正解！</strong><br>':'❌ <strong>不正解。正解は'+['①','②','③','④'][q.a]+'です。</strong><br>')+(q.e||'');
   ex.classList.add('on');
+  // メモ欄を表示（保存済みメモがあればロード）
+  const memo = document.getElementById('q-memo');
+  const memoText = document.getElementById('q-memo-text');
+  if (memo && memoText) {
+    memoText.value = getQNotes()[currentPoolIdx()] || '';
+    memo.classList.add('on');
+  }
   const nb=document.getElementById('q-next');
-  nb.textContent=qIdx<19?'次の問題へ →':'結果を見る';
+  nb.textContent=qIdx<currentQs.length-1?'次の問題へ →':'結果を見る';
   nb.classList.add('on');
 }
 
 function nextQ() {
   qIdx++;
-  if(qIdx>=20) showResult(); else renderQ();
+  if(qIdx>=currentQs.length) showResult(); else renderQ();
 }
 
 async function showResult() {
@@ -1635,8 +1832,9 @@ async function showResult() {
   document.getElementById('quiz-run').style.display='none';
   document.getElementById('quiz-result').style.display='block';
   const correct=qAns.filter((a,i)=>a===currentQs[i].a).length;
-  const pct=Math.round(correct/20*100);
+  const pct=Math.round(correct/currentQs.length*100);
   document.getElementById('s-num').textContent=correct;
+  document.querySelector('.s-den').textContent='/ '+currentQs.length+'問';
   const arc=document.getElementById('s-arc');
   arc.style.strokeDashoffset=289*(1-pct/100);
   arc.style.stroke=pct>=80?'#10b981':pct>=60?'#f59e0b':'#ef4444';
@@ -1670,6 +1868,7 @@ function retryQuiz() {
   document.getElementById('quiz-result').style.display='none';
   document.getElementById('quiz-start').style.display='block';
   renderQuizLastScore();
+  updateBmReviewBtn();
 }
 
 // ─────────────────────────────────────────────
@@ -1770,9 +1969,9 @@ function showTab(name, el) {
   document.getElementById('tab-'+name).classList.add('on');
   if(el) el.classList.add('on');
   else document.querySelectorAll('.app-tab').forEach(t=>{ if(t.getAttribute('onclick')?.includes("'"+name+"'")) t.classList.add('on'); });
-  if(name==='hist') renderHist();
+  if(name==='hist') { renderHist(); renderStudyStats(); renderCalendar(); }
   if(name==='cfg')  renderCfgTab();
-  if(name==='quiz') renderQuizLastScore();
+  if(name==='quiz') { renderQuizLastScore(); updateBmReviewBtn(); }
   if(name==='plan') renderTodayView();
 }
 </script>
